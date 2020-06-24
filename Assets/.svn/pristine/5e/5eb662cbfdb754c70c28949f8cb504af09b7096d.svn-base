@@ -1,0 +1,27 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System;
+
+public class Main : MonoBehaviour
+{
+    
+
+    private void Awake()
+    {
+        ViewManager.Init();
+        ClassCreater.Creat();
+    }
+
+    private void Start()
+    {
+        
+    }
+
+    private void Update()
+    {
+       TimeManager.Update();
+    }
+}
+
+

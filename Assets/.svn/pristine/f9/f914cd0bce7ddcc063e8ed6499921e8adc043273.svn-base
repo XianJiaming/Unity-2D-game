@@ -1,0 +1,95 @@
+﻿using System;
+using System.Collections.Generic;
+
+
+public class EquipModel:ModelBase
+{
+    Equip[] equipBag = new Equip[18];
+
+    public bool IsEmpty
+    {
+        get
+        {
+            bool res = true;
+            foreach(var e in equipBag)
+            {
+                if(e!=null)
+                {
+                    res = false;
+                    break;
+                }
+            }
+
+            return res;
+        }
+    }
+
+    protected override void Init()
+    {
+        base.Init();
+        AddEquip(1);
+        AddEquip(2);
+    }
+    //还没有处理装备满了的情况
+    public bool AddEquip(Equip equip)
+    {
+        if(equip==null)
+        {
+            return false;
+        }
+        int index = -1;
+        for(int i = 0;i<equipBag.Length;i++)
+        {
+            if( equipBag[i] == null)
+            {
+                index = i;
+                equipBag[i] = equip;
+                break;
+            }
+        }
+        if(index!= -1)
+        {
+            
+            EventManager.ExecuteEvent(EventType.EquipUpdate, index);
+            return true;
+        }
+        else
+        {
+            WndTips.ShowTips("背包已满，装备获取失败!");
+            
+            return false;
+        }
+        
+    }
+
+    public bool AddEquip(int id)
+    {
+        return AddEquip(new Equip(id));
+    }
+
+    public bool AddEquip(Equip equip, int index)
+    {
+        if(equipBag[index] == null)
+        equipBag[index] = equip;
+        else
+        {
+            UnityEngine.Debug.LogError("该装备位置不为空，不能添加新装备");
+            return false;
+        }
+        EventManager.ExecuteEvent(EventType.EquipUpdate, index);
+        return true;
+    }
+
+    public Equip RemoveEquip(int index)
+    {
+        var equip = equipBag[index];
+        equipBag[index] = null;
+        EventManager.ExecuteEvent(EventType.EquipUpdate, index);
+        return equip;
+    }
+
+    public Equip GetEquip(int index)
+    {
+        return equipBag[index];
+    }
+}

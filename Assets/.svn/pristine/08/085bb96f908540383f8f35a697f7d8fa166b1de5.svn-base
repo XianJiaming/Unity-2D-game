@@ -1,0 +1,138 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using DG.Tweening;
+
+class WndTips:ViewBase
+{
+    RectTransform selfRect;
+
+    GameObject TipsGo;
+
+    GameObject detailInfoGo;
+    RectTransform detailInfoRect;
+    Text detailInfoText;
+
+    List<RectTransform> tipRectList;
+
+    public override void Init() {
+        base.Init();
+        layer = GameLayer.Tips;
+        SetVisible(true);
+    }
+
+   
+
+    public override void OnFirstOpen()
+    {
+        tipRectList = new List<RectTransform>();
+        TipsGo = GetGameObject("tips");
+        TipsGo.SetActive(false);
+
+        detailInfoGo = GetGameObject("info");
+        detailInfoGo.SetActive(false);
+        detailInfoText = GetText("info/text");
+        detailInfoRect = GetRectTransform("info");
+
+        selfRect = go.GetComponent<RectTransform>();
+    }
+
+    public override void OnShow() { }
+
+    public override void OnHide() { }
+
+    public override void OnDispose() { }
+
+    //战斗中会使用这个方法
+    public void ShowMsg( string content , Vector3 position)
+    {
+        var tipsP =  RectTransformUtility.WorldToScreenPoint(Camera.main, position);
+
+        RectTransform tip;
+        if (tipRectList.Count == 0)
+        {
+            tip = GameObject.Instantiate(TipsGo, go.transform).GetComponent<RectTransform>();
+            
+        }
+        else
+        {
+            tip = tipRectList[tipRectList.Count - 1];
+            
+            tipRectList.Remove(tip);
+        }
+
+        tip.gameObject.SetActive(true);
+        Text t = tip.GetComponent<Text>();
+        t.text = content;
+        t.color = Color.white;
+
+        
+        t.DOColor(Color.clear, 3f).OnComplete(
+            () =>
+            {
+                tip.gameObject.SetActive(false);
+                tipRectList.Add(tip);
+            });
+        
+
+        tip.position = tipsP;
+
+        t.transform.DOLocalMoveY(t.transform.localPosition.y + 80, 1.5f);
+    }
+
+    public void ShowCooperInfo(Cooperation cooper)
+    {
+        detailInfoGo.SetActive(true);
+
+        detailInfoText.text = cooper.GetDesc();
+        EventManager.RegistEvent(EventType.InputClick, CanCloseInfo);
+    }
+
+    public void ShowRoleInfo(RoleBase role)
+    {
+        
+        detailInfoGo.SetActive(true);
+        int level = role.GetLevel();
+        var attributeData = DataClass.ConfigAttributeManager.Instance().allDatas;
+        var roleAttributeData = DataClass.ConfigRoleManager.Instance().allDatas[role.GetRoleId()].attributes[ level - 1];
+        
+
+        var sb = new System.Text.StringBuilder();
+        for (int i = 0; i < 7; i++)
+        {
+            float nowValue = role.attributes[i]; //当前属性
+            int orValue = roleAttributeData[i]; //原属性
+
+            if ( nowValue > orValue)
+            {
+                sb.Append($"{attributeData[i].name}:<color=yellow>{nowValue.ToString()}</color>  ");
+            }
+            else
+            {
+                sb.Append($"{attributeData[i].name}:{nowValue.ToString()}  ");
+            }
+            
+        }
+        string cooperName = DataClass.ConfigCooperationManager.Instance().allDatas[role.GetCooperId()].name;
+        string content = $"<size=50><color=red>{role.name} {cooperName}</color></size>\n{sb.ToString()}\n等级:{level.ToString()}\n {role.skill.GetDesc()}";
+
+
+        detailInfoText.text = content;
+
+
+        EventManager.RegistEvent(EventType.InputClick, CanCloseInfo);
+
+    }
+
+    void CanCloseInfo(object ob=null )
+    {
+        if( !RectTransformUtility.RectangleContainsScreenPoint(detailInfoRect, Input.mousePosition))
+        {
+            detailInfoGo.SetActive(false);
+            EventManager.UnRegistEvent(EventType.InputClick, CanCloseInfo);
+        }
+    }
+
+
+}

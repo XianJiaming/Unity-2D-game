@@ -1,0 +1,162 @@
+using System.Collections.Generic;
+using System;
+namespace DataClass
+{
+
+    public class ConfigRoleManager : ConfigDataManager<ConfigRoleManager,ConfigRole>
+
+    {
+    
+    public override void Init( )
+    {
+    name = "ConfigRole";
+    ConfigRole config = null;
+    
+    config = new ConfigRole();
+    config.id = 10;
+    config.name = "茂茂";
+    config.attributes = new int[][]{new int[]{40,5,3,0,20,350,100},new int[]{80,7,3,0,20,600,100},new int[]{160,10,3,0,20,1300,100}};
+    config.cooperId = 100;
+    config.cost = 1;
+    config.skillId = 1001;
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRole();
+    config.id = 11;
+    config.name = "唐雪见";
+    config.attributes = new int[][]{new int[]{50,4,4,0,20,250,100},new int[]{100,4,5,0,20,450,100},new int[]{220,4,6,0,20,950,100}};
+    config.cooperId = 100;
+    config.cost = 2;
+    config.skillId = 1001;
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRole();
+    config.id = 12;
+    config.name = "花楹";
+    config.attributes = new int[][]{new int[]{45,3,3,0,20,250,100},new int[]{90,3,3,0,20,450,100},new int[]{200,3,3,0,20,950,100}};
+    config.cooperId = 101;
+    config.cost = 2;
+    config.skillId = 1001;
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRole();
+    config.id = 13;
+    config.name = "云庭";
+    config.attributes = new int[][]{new int[]{50,5,3,0,20,300,100},new int[]{100,5,3,0,20,500,100},new int[]{220,5,3,0,20,1000,100}};
+    config.cooperId = 100;
+    config.cost = 2;
+    config.skillId = 1001;
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRole();
+    config.id = 14;
+    config.name = "罗如烈";
+    config.attributes = new int[][]{new int[]{55,5,3,0,20,300,100},new int[]{110,5,3,0,20,500,100},new int[]{230,5,3,0,20,1000,100}};
+    config.cooperId = 100;
+    config.cost = 2;
+    config.skillId = 1001;
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRole();
+    config.id = 15;
+    config.name = "景天";
+    config.attributes = new int[][]{new int[]{55,5,3,0,20,350,100},new int[]{120,6,3,0,20,550,100},new int[]{230,7,3,0,20,1100,100}};
+    config.cooperId = 100;
+    config.cost = 3;
+    config.skillId = 1001;
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRole();
+    config.id = 16;
+    config.name = "龙葵";
+    config.attributes = new int[][]{new int[]{50,4,3,0,20,300,100},new int[]{110,5,4,0,20,500,100},new int[]{230,6,5,0,20,1000,100}};
+    config.cooperId = 102;
+    config.cost = 3;
+    config.skillId = 1001;
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRole();
+    config.id = 17;
+    config.name = "紫萱";
+    config.attributes = new int[][]{new int[]{45,4,3,0,20,300,100},new int[]{100,4,3,0,20,500,100},new int[]{220,4,3,0,20,1000,100}};
+    config.cooperId = 103;
+    config.cost = 3;
+    config.skillId = 1001;
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRole();
+    config.id = 18;
+    config.name = "夕瑶";
+    config.attributes = new int[][]{new int[]{45,3,3,0,20,250,100},new int[]{90,3,3,0,20,450,100},new int[]{200,3,5,0,20,950,100}};
+    config.cooperId = 105;
+    config.cost = 3;
+    config.skillId = 1001;
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRole();
+    config.id = 19;
+    config.name = "徐长卿";
+    config.attributes = new int[][]{new int[]{60,5,3,0,20,350,100},new int[]{120,5,4,0,20,600,100},new int[]{230,5,5,0,20,1200,100}};
+    config.cooperId = 100;
+    config.cost = 4;
+    config.skillId = 1001;
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRole();
+    config.id = 20;
+    config.name = "邪剑仙";
+    config.attributes = new int[][]{new int[]{65,5,3,0,20,350,100},new int[]{120,6,4,0,20,550,100},new int[]{230,7,5,0,20,1100,100}};
+    config.cooperId = 104;
+    config.cost = 4;
+    config.skillId = 1001;
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRole();
+    config.id = 21;
+    config.name = "天妖皇";
+    config.attributes = new int[][]{new int[]{65,5,3,0,20,400,100},new int[]{120,6,4,0,20,600,100},new int[]{230,7,5,0,20,1300,100}};
+    config.cooperId = 101;
+    config.cost = 4;
+    config.skillId = 1001;
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRole();
+    config.id = 22;
+    config.name = "重楼";
+    config.attributes = new int[][]{new int[]{55,10,4,0,20,400,100},new int[]{105,12,4,0,20,800,100},new int[]{230,15,4,0,20,1600,100}};
+    config.cooperId = 104;
+    config.cost = 5;
+    config.skillId = 1001;
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRole();
+    config.id = 23;
+    config.name = "飞蓬";
+    config.attributes = new int[][]{new int[]{55,4,6,0,20,350,100},new int[]{110,4,6,0,20,700,100},new int[]{240,4,6,0,20,1500,100}};
+    config.cooperId = 105;
+    config.cost = 5;
+    config.skillId = 1001;
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRole();
+    config.id = 24;
+    config.name = "李逍遥";
+    config.attributes = new int[][]{new int[]{70,4,4,0,20,350,100},new int[]{120,4,5,0,20,700,100},new int[]{260,4,6,0,20,1500,100}};
+    config.cooperId = 100;
+    config.cost = 5;
+    config.skillId = 1001;
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRole();
+    config.id = 25;
+    config.name = "赵灵儿";
+    config.attributes = new int[][]{new int[]{50,5,4,0,20,500,100},new int[]{100,5,4,0,20,1000,100},new int[]{200,5,4,0,20,2000,100}};
+    config.cooperId = 103;
+    config.cost = 5;
+    config.skillId = 1001;
+    allDatas.Add( config.id, config)
+;
+    base.Init();
+    }
+}
+}

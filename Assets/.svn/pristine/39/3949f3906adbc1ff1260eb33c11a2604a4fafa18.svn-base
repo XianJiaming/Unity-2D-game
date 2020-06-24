@@ -1,0 +1,125 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using DG.Tweening;
+using UnityEngine.UI;
+
+
+
+
+
+public enum RolePro
+{
+    拳 = 1,
+    剑 = 2,
+    指 = 3,
+    刀 = 4,
+    腿 = 5,
+    掌 = 6,
+    内 = 7,
+    体 = 8,
+    绝 = 9
+}
+
+public class RoleBase
+{
+    //属性
+    RolePro pro;
+    int id;
+    string name;
+    GameObject go;
+    int[] attributes = new int[7];
+
+
+
+    //gameObject组件
+    Text nameText;
+
+    //行动计时
+    bool isStop = false;
+    float actTime = 0f;
+
+    void Init(GameObject go, int roleId )
+    {
+        dynamic data = ConfigManager.GetConfig("ConfigRole", roleId);
+        name = data.name;
+        id = roleId;
+        for(int i=0;i<attributes.Length;i++)
+        {
+            attributes[i] = data.attributes[i];
+        }
+
+        nameText = go.transform.Find("name").GetComponent<Text>();
+    }
+
+    public void UpdateView()
+    {
+        nameText.text = name;
+    }
+
+    public void BeAttack(int hurtValue, RoleBase attacker = null)
+    {
+        int getHurtValue = hurtValue - attributes[3];
+        GetHurt(getHurtValue);
+        
+    }
+    void GetHurt(int value)
+    {
+        attributes[5] -= value;
+        var wndTips = ViewManager.Get("WndTips") as WndTips;
+        wndTips.ShowMsg(value.ToString(), go.transform.position);
+        if (attributes[5] <= 0)
+            Die();
+    }
+
+    public void Attack(RoleBase target )
+    {
+        int hurtValue = attributes[0];
+        
+
+        Vector3 orPosition = go.transform.position;
+        go.transform.DOMove(target.go.transform.position, 0.5f).OnComplete(
+            ( ) =>
+            {
+                
+                target.BeAttack(hurtValue);
+                go.transform.DOMove(orPosition, 0.5f).OnComplete(AfterAct);
+            }
+            );
+
+    }
+    public void UseSkill(RoleBase target)
+    {
+
+    }
+    public void Die()
+    {
+
+    }
+    public bool CanAct()
+    {
+        return actTime >= 1f;
+    }
+
+    public void Act()
+    {
+        FightManager.isAnyoneAct = true;
+        actTime = 0f;
+    }
+    void AfterAct()
+    {
+        FightManager.isAnyoneAct = false;
+    }
+
+    public void Update()
+    {
+        if (FightManager.isAnyoneAct) return;
+        if (isStop) return;
+        
+
+        actTime += Time.deltaTime;
+        if (CanAct())
+            Act();
+    }
+    
+}

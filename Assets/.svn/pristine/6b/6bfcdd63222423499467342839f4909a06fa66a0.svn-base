@@ -1,0 +1,13 @@
+﻿using System;
+using System.Collections.Generic;
+
+public class DataHelp
+{
+    public static T GetRandom<T>(List<T> list)
+    {
+        int index = UnityEngine.Random.Range(0, list.Count);
+
+        return list[index];
+
+    }
+}

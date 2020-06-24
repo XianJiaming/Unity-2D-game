@@ -1,0 +1,34 @@
+using System.Collections.Generic;
+using System;
+namespace DataClass
+{
+
+    public class ConfigEquipManager : ConfigDataManager<ConfigEquipManager,ConfigEquip>
+
+    {
+    
+    public override void Init( )
+    {
+    name = "ConfigEquip";
+    ConfigEquip config = null;
+    
+    config = new ConfigEquip();
+    config.id = 1;
+    config.name = "望舒剑";
+    config.attributes = new Dictionary<int,int>{{0,50},{2,30}};
+    config.equipType = 0;
+    config.level = 5;
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigEquip();
+    config.id = 2;
+    config.name = "盘古开天斧";
+    config.attributes = new Dictionary<int,int>{{0,100}};
+    config.equipType = 0;
+    config.level = 5;
+    allDatas.Add( config.id, config)
+;
+    base.Init();
+    }
+}
+}

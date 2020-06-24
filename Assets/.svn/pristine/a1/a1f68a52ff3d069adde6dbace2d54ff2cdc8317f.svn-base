@@ -1,0 +1,26 @@
+using System.Collections.Generic;
+using System;
+namespace DataClass
+{
+
+    public class ConfigSkillManager : ConfigDataManager<ConfigSkillManager,ConfigSkill>
+
+    {
+    
+    public override void Init( )
+    {
+    name = "ConfigSkill";
+    ConfigSkill config = null;
+    
+    config = new ConfigSkill();
+    config.id = 1001;
+    config.name = "万剑诀";
+    config.targetType = new int[]{1,0};
+    config.targetQueue = 1;
+    config.idValue = new Dictionary<int,int[]>{{7,new int[]{500,300,400}},{5,new int[]{10,20,60}}};
+    allDatas.Add( config.id, config)
+;
+    base.Init();
+    }
+}
+}

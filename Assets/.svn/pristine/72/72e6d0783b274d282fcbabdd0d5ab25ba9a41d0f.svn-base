@@ -1,0 +1,93 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayerData
+{
+
+    int money;
+    int Hp;
+
+    public int GetHp()
+    {
+        return Hp;
+    }
+
+    void SetHp(int value)
+    {
+        Hp = value;
+        EventManager.ExecuteEvent(EventType.PlayerHpUpdate);
+
+    }
+
+
+    public void AddHp(int value)
+    {
+        SetHp(GetHp() + value);
+    }
+
+    public void ReduceHp(int value)
+    {
+        SetHp(GetHp() - value);
+        if(GetHp()<=0 )
+        {
+            
+            Debug.Log("玩家死亡，游戏结束");
+            EventManager.ExecuteEvent(EventType.GameOver);
+        }
+    }
+
+
+    public PlayerData(int value, int Hp = 20)
+    {
+        money = value;
+        this.Hp = Hp;
+        AddEvent();
+    }
+
+    void AddEvent()
+    {
+        EventManager.RegistEvent(EventType.FightEnd, OnNextLevel);
+    }
+
+    void OnNextLevel(object ob =null)
+    {
+        int curtMoney = GetMoney();
+        int lixi = curtMoney / 10;
+
+        AddMoney(5 + lixi);
+    }
+
+
+    public int GetMoney()
+    {
+        return money;
+    }
+
+    void SetMoney(int value)
+    {
+        money = value;
+        EventManager.ExecuteEvent(EventType.MoneyUpdate);
+    }
+
+    public void AddMoney(int value)
+    {
+        SetMoney(money + value);
+    }
+    public bool ReduceMoney(int value)
+    {
+        if(money - value <0)
+        {
+            Debug.Log("钱不够");
+            return false;
+        }
+        else
+        {
+            SetMoney(money - value);
+            return true;
+        }
+
+    }
+
+
+}

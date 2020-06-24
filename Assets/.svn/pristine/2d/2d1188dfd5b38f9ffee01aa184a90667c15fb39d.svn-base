@@ -1,0 +1,23 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System;
+
+public class ClassCreater
+{
+    public static void Creat()
+    {
+        PlayerModel.Instance().Init();
+        CooperationModel.instance.Init();
+
+
+
+        new WndGameStart();
+        new WndFight();
+        new WndTips();
+        new WndCooper();
+        new WndRoleShop();
+        new WndPrepare();
+    }
+}
+

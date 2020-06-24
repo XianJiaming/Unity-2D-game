@@ -1,0 +1,303 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Data;
+using Excel;
+using UnityEngine;
+using UnityEditor;
+using DataClass;
+using System.IO;
+using System.Reflection;
+using System;
+using System.CodeDom;
+using System.CodeDom.Compiler;
+using Object = System.Object;
+using System.Text;
+
+public class CreateDataWindow:EditorWindow
+{
+    [MenuItem("CreateDataAsset/StartCreat")]
+    static void OpenWindow()
+    {
+        Rect wr = new Rect(0, 0, 500, 500);
+        CreateDataWindow window = (CreateDataWindow)EditorWindow.GetWindowWithRect<CreateDataWindow>(wr, true,
+            "创建数据资源");
+        window.Show();
+    }
+    string text;
+    private void OnGUI()
+    {
+        
+        text = EditorGUILayout.TextField("输入文件名:", text);
+
+        if (GUILayout.Button("生成数据类", GUILayout.Width(200)))
+        {
+            CreatDataAsset.Analysis(text);
+           
+        }
+        if(GUILayout.Button("生成数据资源", GUILayout.Width(200)))
+            CreatDataAsset.GetDataAsset(text);
+    }
+    
+}
+
+
+public class CreatDataAsset:Editor
+{
+    static List<string> configNames;
+
+    static List<string> memberType = new List<string>();
+    static List<string> names = new List<string>( );
+    
+
+    public static void Analysis(string fileName)
+    {
+        memberType.Clear();
+        names.Clear();
+        string path = Application.dataPath + "/Configs/" + fileName + ".xlsx";
+        FileStream fileStream = File.Open(path , FileMode.Open, FileAccess.Read);
+        IExcelDataReader excelDataReader = ExcelReaderFactory.CreateOpenXmlReader(fileStream);
+
+        // 表格数据全部读取到result里
+        DataSet result = excelDataReader.AsDataSet();
+        var table = result.Tables[0];
+        // 获取表格有多少列
+        int columns = result.Tables[0].Columns.Count;
+        // 获取表格有多少行
+        int rows = result.Tables[0].Rows.Count;
+
+
+        //取得表格中的数据 
+        //取得table中所有的行
+        var rowCollections = table.Rows;
+
+        var rowCollection1 = rowCollections[1];//返回了第0行的集合
+
+        var rowCollection2 = rowCollections[2];
+
+        int columnLength = table.Columns.Count; //列数
+        int rowLength = rowCollections.Count;
+        
+       
+        for (int i = 0; i < columnLength; i++)
+        {
+            memberType.Add(rowCollection1[i].ToString());
+        }
+
+        for (int i = 0; i < columnLength; i++)
+        {
+            names.Add(rowCollection2[i].ToString());
+        }
+
+        BuildClass(fileName);
+       
+    }
+
+    public static void GetDataAsset(string fileName)
+    {
+        Debug.Log(fileName);
+        memberType.Clear();
+        names.Clear();
+        string path = Application.dataPath + "/Configs/" + fileName + ".xlsx";
+        FileStream fileStream = File.Open(path, FileMode.Open, FileAccess.Read);
+        IExcelDataReader excelDataReader = ExcelReaderFactory.CreateOpenXmlReader(fileStream);
+
+        // 表格数据全部读取到result里
+        DataSet result = excelDataReader.AsDataSet();
+        var table = result.Tables[0];
+        // 获取表格有多少列
+        int columns = result.Tables[0].Columns.Count;
+        // 获取表格有多少行
+        int rows = result.Tables[0].Rows.Count;
+
+
+        //取得表格中的数据
+        //取得table中所有的行
+        var rowCollections = table.Rows;
+
+        var rowCollection1 = rowCollections[1];//返回了第0行的集合
+
+        var rowCollection2 = rowCollections[2];
+
+        int columnLength = table.Columns.Count; //列数
+        int rowLength = rowCollections.Count;
+
+
+        //for (int i = 0; i < columnLength; i++)
+        //{
+        //    memberType.Add(rowCollection1[i].ToString());
+        //}
+
+        for (int i = 0; i < columnLength; i++)
+        {
+            names.Add(rowCollection2[i].ToString());
+        }
+
+        dynamic manager = CreateInstance(fileName + "Manager");
+
+
+        for (int i = 3; i < rowLength; i++)
+        {
+
+            dynamic ob = Assembly.Load("Assembly-CSharp").CreateInstance("DataClass." + fileName);
+            Type tp = ob.GetType();
+            var obMembers = tp.GetMembers();
+            for (int j = 0; j < columnLength; j++)
+            {
+                var value = rowCollections[i][j];
+
+                var finalValue = ConvertMyExcel.ConvertString(rowCollection1[j].ToString(), value.ToString());
+
+                tp.GetField(names[j]).SetValue(ob, finalValue);
+            }
+
+            manager.allDatas.Add(ob);
+        }
+
+        string assetPath = "Assets/Resources/DataAsset/" + fileName + ".asset";
+        
+        AssetDatabase.CreateAsset(manager, assetPath);
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+
+
+    }
+
+
+    private static void BuildClass(string className)
+    {
+        //准备一个代码编译器单元
+
+        CodeCompileUnit unit = new CodeCompileUnit();
+
+        //设置命名空间（这个是指要生成的类的空间）
+
+        CodeNamespace myNamespace = new CodeNamespace("DataClass");
+
+        //导入必要的命名空间引用
+        myNamespace.Imports.Add(new CodeNamespaceImport("System"));
+
+        myNamespace.Imports.Add(new CodeNamespaceImport("System.Collections.Generic"));
+
+        //Code:代码体
+
+        CodeTypeDeclaration myClass = new CodeTypeDeclaration(className);
+
+        //指定为类
+        
+        myClass.IsClass = true;
+        
+        //设置类的访问类型
+
+        myClass.TypeAttributes = TypeAttributes.Public;// 
+
+        //把这个类放在这个命名空间下
+
+        myNamespace.Types.Add(myClass);
+
+        //把该命名空间加入到编译器单元的命名空间集合中
+        unit.Namespaces.Add(myNamespace);
+        for (int i = 0; i < memberType.Count; i++)
+        {
+            //添加字段
+           
+            CodeMemberField field = new CodeMemberField(Type.GetType("System." + memberType[i]), names[i]);
+            //设置访问类型
+            field.Attributes = MemberAttributes.Public;
+            ///添加到myClass类中
+            myClass.Members.Add(field);
+        }
+        //生成C#脚本("VisualBasic"：VB脚本)
+
+        CodeDomProvider provider = CodeDomProvider.CreateProvider("CSharp");
+
+        CodeGeneratorOptions options = new CodeGeneratorOptions();
+
+        //代码风格:大括号的样式{}
+
+        options.BracingStyle = "C";
+
+        myClass.CustomAttributes.Add(new CodeAttributeDeclaration(new CodeTypeReference(typeof(SerializableAttribute))));
+
+        //是否在字段、属性、方法之间添加空白行
+
+        options.BlankLinesBetweenMembers = true;
+
+        //输出文件路径
+
+        string outputFile = Application.dataPath + "/Scripts/DataAsset/DataBaseClass/" + className + ".cs";
+
+        //保存
+
+        using (System.IO.StreamWriter sw = new System.IO.StreamWriter(outputFile))
+        {
+            //为指定的代码文档对象模型(CodeDOM) 编译单元生成代码并将其发送到指定的文本编写器，使用指定的选项。(官方解释)
+            //将自定义代码编译器(代码内容)、和代码格式写入到sw中
+            provider.GenerateCodeFromCompileUnit(unit, sw, options);
+        }
+
+        string code = "using System.Collections.Generic;\n" +
+                      "using UnityEngine;\n" +
+                       "namespace DataClass\n" +
+                       "{\n\n" +
+                       $"public class {className}Manager : ScriptableObject\n\n" +
+                       "{\n" +
+                       $"public List<{className}> allDatas = new List<{className}>();\n" +
+                       "}}\n";
+
+        FileStream fs = new FileStream(Application.dataPath + "/Scripts/DataAsset/DataManager/" + className + "Manager.cs", FileMode.Create);//创建文件
+        StreamWriter w = new StreamWriter(fs);
+       
+        w.Write(code);//追加数据
+        w.Close();//释放资源,关闭文件  
+        fs.Close();
+
+    }
+
+    
+}
+
+
+class ConvertMyExcel
+{
+    
+
+    public static Object ConvertString(string stringType, string content)
+    {
+        Object re = null;
+        switch (stringType){
+            case "Int32":
+                re = ToInt(content);
+                break;
+            case "String":
+                re = content;
+                break;
+            case "Int32[]":
+                re = ToIntArray(content);
+                break;
+        }
+        return re;
+    }
+
+    static int ToInt(string str)
+    {
+
+        return int.Parse(str);
+    }
+
+    static int[] ToIntArray(string str)
+    {
+        StringBuilder sb = new StringBuilder(str);
+        sb.Remove(0,1);
+        sb.Remove(sb.Length - 1, 1);
+
+         
+        string[] intArray = sb.ToString().Split(',');
+       
+        return Array.ConvertAll(intArray, int.Parse);
+    }
+
+        
+
+
+
+}

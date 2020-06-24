@@ -1,0 +1,34 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System;
+
+public class Main : MonoBehaviour
+{
+    
+
+
+
+
+    private void Awake()
+    {
+        ConfigManager.Init();
+        ViewManager.Init();
+        ClassCreater.Creat();
+        
+    }
+
+    private void Start()
+    {
+        EventManager.RegistEvent(EventType.Update, ( object o )=>{ return; } );
+    }
+    
+
+    private void Update()
+    {
+        TimeManager.Update();
+        EventManager.ExecuteEvent(EventType.Update);
+    }
+}
+
+

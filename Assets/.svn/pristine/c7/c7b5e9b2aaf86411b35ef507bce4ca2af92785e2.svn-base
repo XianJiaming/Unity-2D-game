@@ -1,0 +1,184 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using UnityEngine;
+
+public class SaveAndLoad
+{
+
+    public static void Init()
+    {
+        EventManager.RegistEvent(EventType.ApplicationQuit, SaveGame);
+        EventManager.RegistEvent(EventType.GameOver, Clear);
+        EventManager.RegistEvent(EventType.GameVectory, Clear);
+        EventManager.RegistEvent(EventType.NextLevel, SaveGame);
+    }
+
+    public static void SaveGame( object ob = null)
+    {
+
+        Clear();
+
+        if(!Main.isGame)
+        {
+            return;
+        }
+
+        PlayerModel playerModel = ModelManager.Get("PlayerModel") as PlayerModel;
+
+        int money = playerModel.GetMoney();
+        int hp = playerModel.GetHp();
+        int peopleLevel = playerModel.peopleLevel;
+        int gameLevel = (ModelManager.Get("GameLevelModel") as GameLevelModel).GetLevel();
+
+        StringBuilder fightSb = new StringBuilder();
+        StringBuilder preSb = new StringBuilder();
+        var fightRoles = playerModel.fightRoles;
+        var preRoles = playerModel.preRoles;
+
+
+        for(int i=0;i< fightRoles.Length;i++)
+        {
+            var role = fightRoles[i];
+            if(role!=null)
+            {
+                fightSb.Append($"{i.ToString()},{role.GetRoleId().ToString()},{role.GetLevel().ToString()}|");
+            }
+            
+        }
+        
+            
+
+        for (int i = 0; i < preRoles.Length; i++)
+        {
+            var role = preRoles[i];
+            if (role != null)
+            {
+                preSb.Append($"{i.ToString()},{role.GetRoleId().ToString()},{role.GetLevel().ToString()}|");
+            }
+
+        }
+       
+            
+
+        PlayerPrefs.SetInt("money", money);
+        PlayerPrefs.SetInt("hp", hp);
+        PlayerPrefs.SetInt("gameLevel", gameLevel);
+        PlayerPrefs.SetInt("peopleLevel", peopleLevel);
+
+        if (fightSb.Length > 0)
+        {
+            fightSb.Remove(fightSb.Length - 1, 1);
+            PlayerPrefs.SetString("fightRoles", fightSb.ToString());
+        }
+            
+        if (preSb.Length > 0)
+        {
+            preSb.Remove(preSb.Length - 1, 1);
+            PlayerPrefs.SetString("preRoles", preSb.ToString());
+        }
+            
+
+        
+    }
+
+
+    public static void Clear( object o = null )
+    {
+        PlayerPrefs.DeleteAll();
+    }
+
+
+    public static void Load( )
+    {
+        PlayerModel playerModel = ModelManager.Get("PlayerModel") as PlayerModel;
+        if ( PlayerPrefs.HasKey("money"))
+        {
+            playerModel.SetMoney(PlayerPrefs.GetInt("money") - playerModel.GetMoney());
+        }
+        else
+        {
+            playerModel.SetMoney(100 - playerModel.GetMoney());
+        }
+
+        if( PlayerPrefs.HasKey("gameLevel"))
+        {
+            (ModelManager.Get("GameLevelModel") as GameLevelModel).SetLevel(PlayerPrefs.GetInt("gameLevel"));
+
+        }
+        else
+        {
+            (ModelManager.Get("GameLevelModel") as GameLevelModel).SetLevel(0);
+        }
+
+        if (PlayerPrefs.HasKey("peopleLevel"))
+        {
+            playerModel.peopleLevel = PlayerPrefs.GetInt("peopleLevel");
+
+        }
+        else
+        {
+            playerModel.peopleLevel = 2;
+        }
+
+
+
+        if ( PlayerPrefs.HasKey("hp"))
+        {
+            playerModel.SetHp(PlayerPrefs.GetInt("hp") - playerModel.GetHp());
+
+        }
+        else
+        {
+            playerModel.SetHp(30 - playerModel.GetHp());
+        }
+
+        if(PlayerPrefs.HasKey("fightRoles"))
+        {
+            string fightRoles = PlayerPrefs.GetString("fightRoles");
+            string[] roles = fightRoles.Split('|');
+
+            for( int i=0;i<roles.Length;i++)
+            {
+                
+                string[] role = roles[i].Split(',');
+
+                int index = int.Parse(role[0]);
+
+                int roleId = int.Parse(role[1]);
+
+                int level = int.Parse(role[2]);
+
+                RoleBase fRole = new RoleBase();
+                fRole.SetId(roleId, level);
+                playerModel.AddFightRole(fRole, index);
+            }
+        }
+
+        if (PlayerPrefs.HasKey("preRoles"))
+        {
+            string preRoles = PlayerPrefs.GetString("preRoles");
+            string[] roles = preRoles.Split('|');
+
+            for (int i = 0; i < roles.Length; i++)
+            {
+
+                string[] role = roles[i].Split(',');
+
+                int index = int.Parse(role[0]);
+
+                int roleId = int.Parse(role[1]);
+
+                int level = int.Parse(role[2]);
+
+                RoleBase pRole = new RoleBase();
+                pRole.SetId(roleId, level);
+
+                playerModel.SetPreRole(pRole,index);
+            }
+        }
+
+
+    }
+}
+

@@ -1,0 +1,43 @@
+﻿using System;
+using System.Collections.Generic;
+
+public class DataHelp
+{
+
+    //从list中返回一个随机 元素
+    public static T GetRandom<T>(List<T> list)
+    {
+        int index = UnityEngine.Random.Range(0, list.Count);
+
+        return list[index];
+
+    }
+
+    //从list里返回一个N大小的随机数组(并且不重复) 
+    public static T[] GetRandom<T>(List<T> list, int count)
+    {
+        T[] array;
+        if (count<list.Count)
+        {
+            array = new T[count];
+            List<T> tempList = new List<T>();
+            foreach (var v in list)
+            {
+                tempList.Add(v);
+            }                   
+            //执行count次
+            for (int i = 0; i < count; i++)
+            {
+                int randomIndex = UnityEngine.Random.Range(0, tempList.Count);
+                array[i] = tempList[randomIndex];
+                tempList.RemoveAt(randomIndex);
+            }
+        }
+        else
+        {
+            array = list.ToArray();
+        }
+
+        return array;
+    }
+}

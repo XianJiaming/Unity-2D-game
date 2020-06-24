@@ -1,0 +1,27 @@
+﻿
+public class AIModel 
+{
+    public static AIModel instance = new AIModel();
+    AIModel()
+    {
+        Init();
+    }
+
+    public RoleBase[] fightRoles;
+
+    
+
+    void Init()
+    {
+        fightRoles = new RoleBase[9];
+        for(int i=0;i<3;i++)
+        {
+            fightRoles[i] = new RoleBase();
+            fightRoles[i].Init(10);
+        }
+        fightRoles[3] = new RoleBase();
+        fightRoles[3].Init(12);
+    }
+}
+
+

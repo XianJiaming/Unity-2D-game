@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: RoleShop
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 1
+    variantMultiplier: 1
+    packables:
+    - {fileID: 102900000, guid: 28eab53dcf1f5864b814cf6b516cd8d3, type: 3}
+    totalSpriteSurfaceArea: 305459
+    bindAsDefault: 1
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 447578c1ee8e3b941a56c81756a7650b, type: 3}
+  - {fileID: 21300000, guid: bcaf5f245338bba44b09f6fd22fba979, type: 3}
+  - {fileID: 21300000, guid: f7277188863921f47b2c188455621b99, type: 3}
+  - {fileID: 21300000, guid: db0e1ac84c2253d4cb8c1443cee4f9ce, type: 3}
+  - {fileID: 21300000, guid: fc9ec059be9bab247a158ea63970dc71, type: 3}
+  - {fileID: 21300000, guid: f9a1051d66364b54c8c6e4c830c96c51, type: 3}
+  - {fileID: 21300000, guid: 7ce6fdae2202b0c42860f5c11fb09707, type: 3}
+  - {fileID: 21300000, guid: 1fb3133f57290cc418a255d7286bccde, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - 28lock
+  - 27don't lock
+  - 22hero box
+  - 25buy button
+  - 26 refresh button
+  - 29return
+  - 20background
+  - 21background box
+  m_Tag: RoleShop
+  m_IsVariant: 0

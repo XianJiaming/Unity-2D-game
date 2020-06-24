@@ -1,0 +1,10 @@
+using System.Collections.Generic;
+using UnityEngine;
+namespace DataClass
+{
+
+public class ConfigAttributeManager : ScriptableObject
+
+{
+public List<ConfigAttribute> allDatas = new List<ConfigAttribute>();
+}}

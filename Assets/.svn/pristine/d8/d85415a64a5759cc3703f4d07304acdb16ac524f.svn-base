@@ -1,0 +1,447 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class WndPrepare : ViewBase
+{
+    //-----------------------------------------------------------
+
+    public class PreRoleItem
+    {
+        public RoleBase role;
+        public GameObject roleGo;
+        public EnumType.RoleListType listType;
+
+
+        public PreRoleItem( GameObject go, EnumType.RoleListType listType)
+        {
+            roleGo = go;
+            UIUtil.SetUIOnClick(go, OnClick);
+            this.listType = listType;
+        }
+
+        void OnClick(GameObject go)
+        {
+            //显示角色信息
+            ViewManager.Get<WndTips>("WndTips").ShowRoleInfo(role);
+            //显示售卖的接口
+            ViewManager.Get<WndPrepare>("WndPrepare").UpdateSellText(role );
+
+        }
+        public void SetRole(RoleBase role)
+        {
+            if (role == null)
+            {               
+                roleGo.SetActive(false);
+                return;
+            }               
+            else
+            {
+                this.role = role;
+                role.SetUIGo(roleGo);
+
+                UpdateView();
+            }
+            
+        }
+        public void UpdateView()
+        {
+            if(role!=null)
+            {
+                role.UpdateView();
+                roleGo.SetActive(true);
+            }
+            else
+            {
+                roleGo.SetActive(false);
+            }
+            
+        }
+    }
+
+
+
+
+
+
+    //-----------------------------------------------------------
+    PlayerModel playerModel;
+    WndTips wndTips;
+
+    RectTransform selfRect;
+    RectTransform fightList;
+    RectTransform preList;
+
+    //战斗与准备队列
+    RectTransform[] fightPositions;
+    RectTransform[] prePositions;
+    //类对象
+    PreRoleItem[] fightRoleItems;
+    PreRoleItem[] preRoleItems;
+    //go对象
+    GameObject[] fightRoleGos;
+    GameObject[] preRoleGos;
+
+    GameObject dragRoleGo;
+
+    Text moneyText;
+    Text fightCountText;
+    Text preCountText;
+
+    GameObject sellGo;
+    RectTransform sellRect;
+    Text sellPriceText;
+
+    Dictionary<GameObject, PreRoleItem> goItems = new Dictionary<GameObject, PreRoleItem>();
+
+    public override void Init()
+    {
+        base.Init();
+    }
+
+    public override void OnFirstOpen()
+    {
+        base.OnFirstOpen();
+
+        fightCountText = GetText("fightCount");
+        preCountText = GetText("preCount");
+        moneyText = GetText("belowUI/money/value");
+
+        sellGo = GetGameObject("sell");
+        sellRect = GetRectTransform("sell");
+        sellGo.SetActive(false);
+        sellPriceText = GetText("sell/price");
+
+        wndTips = ViewManager.Get<WndTips>("WndTips");
+        playerModel = PlayerModel.Instance();
+
+        int preCount = PlayerModel.Max_Pre_Role_Count;
+        int fightCount = FightManager.Max_Fight_List_Number;
+
+        selfRect = go.GetComponent<RectTransform>();
+
+        fightList = GetRectTransform("fightList/list");
+        preList = GetRectTransform("prepareList/list");
+
+        fightPositions = new RectTransform[fightCount];
+        for(int i =0;i<9;i++)
+        {
+            fightPositions[i] = fightList.Find( i.ToString()).GetComponent<RectTransform>();
+        }
+
+        prePositions = new RectTransform[preCount];
+        for (int i = 0; i < preCount; i++)
+        {
+            prePositions[i] = preList.Find( i.ToString()).GetComponent<RectTransform>();
+        }
+
+        fightRoleGos = new GameObject[fightCount];
+        for(int i=0;i< fightCount; i++)
+        {
+            fightRoleGos[i] = fightPositions[i].Find("Role").gameObject;
+
+//             var uiDrag = UIDrag.GetUIDrag(fightRoleGos[i]);
+//             uiDrag.AddBeginDrag(OnBeginDrag);
+//             uiDrag.AddDrag(OnDrag);
+//             uiDrag.AddEndDrag(OnEndDrag);
+        }
+
+        preRoleGos = new GameObject[preCount];
+        for(int i=0;i<preCount;i++)
+        {
+            preRoleGos[i] = prePositions[i].Find("Role").gameObject;
+
+//             var uiDrag = UIDrag.GetUIDrag(preRoleGos[i]);
+//             uiDrag.AddBeginDrag(OnBeginDrag);
+//             uiDrag.AddDrag(OnDrag);
+//             uiDrag.AddEndDrag(OnEndDrag);
+        }
+
+        fightRoleItems = new PreRoleItem[fightCount];
+        for (int i = 0; i < fightRoleItems.Length; i++)
+        {
+                
+            fightRoleItems[i] = new PreRoleItem(fightRoleGos[i], EnumType.RoleListType.Fight);
+            goItems.Add(fightRoleItems[i].roleGo, fightRoleItems[i]);
+        }
+
+        preRoleItems = new PreRoleItem[preCount];
+        for(int i = 0;i < preCount; i++)
+        {
+            preRoleItems[i] = new PreRoleItem(preRoleGos[i], EnumType.RoleListType.Pre);
+            goItems.Add(preRoleItems[i].roleGo, preRoleItems[i]);
+        }
+
+        foreach(var v in goItems.Keys)
+        {
+            var uiDrag = UIDrag.GetUIDrag(v);
+            uiDrag.AddBeginDrag(OnBeginDrag);
+            uiDrag.AddDrag(OnDrag);
+            uiDrag.AddEndDrag(OnEndDrag);
+        }
+
+        AddUIButton("belowUI/shop", OnClickOpenShop);
+        AddUIButton("belowUI/startFight", OnClickStartFight);
+        AddUIButton("belowUI/levelUp", OnClickLevelUp);
+    }
+
+
+
+    public override void OnShow()
+    {
+        base.OnShow();
+
+        AddEvent();
+
+        UpdateView();
+    }
+
+    public override void OnHide()
+    {
+        base.OnHide();
+
+        RemoveEvent();
+    }
+
+    public override void OnDispose()
+    {
+        base.OnDispose();
+    }
+
+    void UpdateMoneyView(object ob = null )
+    {
+        moneyText.text = playerModel.GetMoney().ToString();
+    }
+
+
+    //--------------------------------------------------------------------------------
+    Vector3 orPosition; //原始坐标
+
+    void OnBeginDrag(GameObject go)
+    {
+        orPosition = go.transform.position;
+
+    }
+
+
+    void OnDrag(GameObject go)
+    {
+        //仅在ui的世界坐标和 鼠标的屏幕坐标一致时有用
+        go.transform.position = Input.mousePosition;
+    }
+    void OnEndDrag(GameObject go)
+    {
+
+        //先判断原本在哪个队列
+        string name = go.transform.parent.parent.parent.name;
+
+
+        if( name.Equals("fightList"))
+        {
+            //如果停在fight里
+            if (RectTransformUtility.RectangleContainsScreenPoint
+                (fightList, Input.mousePosition))
+            {
+                for (int i = 0; i < fightPositions.Length; i++)
+                {
+                    bool isHere = RectTransformUtility.RectangleContainsScreenPoint(fightPositions[i], Input.mousePosition);
+                    if (isHere)
+                    {
+                        int orIndex = int.Parse(go.transform.parent.name);
+                        //int newIndex = i;
+                        playerModel.ExChangeRolesBetFight(orIndex, i);
+                        break;
+                    }
+
+                }
+            }
+            //如果停在准备列表
+            else if (RectTransformUtility.RectangleContainsScreenPoint(preList, Input.mousePosition))
+            {
+                for (int i = 0; i < prePositions.Length; i++)
+                {
+                    bool isHere = RectTransformUtility.RectangleContainsScreenPoint(prePositions[i], Input.mousePosition);
+                    if (isHere)
+                    {
+                        int orIndex = int.Parse(go.transform.parent.name);
+                        playerModel.ExChangeRolesBetPreAndFight(orIndex, i);
+
+
+                        break;
+                    }
+                }
+            }
+
+        }
+        //如果原本是在准备列表
+        else if( name.Equals("prepareList"))
+        {
+            //如果停在fight里
+            if (RectTransformUtility.RectangleContainsScreenPoint
+                (fightList, Input.mousePosition))
+            {
+                for (int i = 0; i < fightPositions.Length; i++)
+                {
+                    bool isHere = RectTransformUtility.RectangleContainsScreenPoint(fightPositions[i], Input.mousePosition);
+                    if (isHere)
+                    {
+                        int orIndex = int.Parse(go.transform.parent.name);
+                        playerModel.ExChangeRolesBetPreAndFight(i, orIndex);
+
+                        break;
+                    }
+
+                }
+            }
+            //如果停在准备列表
+            else if (RectTransformUtility.RectangleContainsScreenPoint(preList, Input.mousePosition))
+            {
+                for (int i = 0; i < prePositions.Length; i++)
+                {
+                    bool isHere = RectTransformUtility.RectangleContainsScreenPoint(prePositions[i], Input.mousePosition);
+                    if (isHere)
+                    {
+                        int orIndex = int.Parse(go.transform.parent.name);
+
+                        playerModel.ExChangeRolesBetPre(i, orIndex);
+
+                        break;
+                    }
+                }
+            }
+
+        }
+
+        go.transform.position = orPosition;
+    }
+
+    //--------------------------------------------------------------------------------
+
+    public void UpdateSellText(RoleBase role)
+    {
+        sellGo.SetActive(true);
+        sellPriceText.text = role.GetPrice().ToString();
+
+        
+        UIUtil.SetUIOnClick(sellGo, (go)=> {
+
+            int index = int.Parse(role.GetGo().transform.parent.name);
+            var type = goItems[role.GetGo()].listType;
+            playerModel.SellRole(index, type);
+
+            sellGo.SetActive(false);
+        });
+
+        //开启监听 售卖选项 的关闭
+        EventManager.RegistEvent(EventType.InputClick, CanCloseSellGo);
+
+
+    }
+    //判断是否关闭 售卖 button
+    void CanCloseSellGo(object ob)
+    {
+
+        if (!RectTransformUtility.RectangleContainsScreenPoint(sellRect, Input.mousePosition))
+        {
+            sellGo.SetActive(false);
+            EventManager.UnRegistEvent(EventType.InputClick, CanCloseSellGo);
+        }
+    }
+
+
+    void OnClickOpenShop(object ob = null )
+    {
+        ViewManager.Get<WndRoleShop>("WndRoleShop").SetVisible(true);
+    }
+
+    void OnClickStartFight(object ob = null)
+    {
+        SetVisible(false);
+
+        ViewManager.Get<WndFight>("WndFight").SetVisible(true);
+    }
+
+    void OnClickLevelUp(object ob = null)
+    {
+
+        playerModel.UpdateLevel();
+
+
+    }
+    //更新上阵数量显示
+    void UpdateFightCount(object ob = null)
+    {
+        fightCountText.text = $"上阵：{playerModel.GetFightRoleCount().ToString()}/{playerModel.level.ToString()}";
+    }
+    //更新准备角色数量
+    void UpdatePreCount(object ob =null)
+    {
+        preCountText.text = $"准备：{playerModel.GetPreRoleCount().ToString()}/{ PlayerModel.Max_Pre_Role_Count }";
+    }
+
+    void UpdateView()
+    {
+        UpdateFightView();
+        UpdatePrepareView();
+        UpdateFightCount();
+        UpdateMoneyView();
+    }
+
+    //更新战斗队列的显示
+    void UpdateFightView()
+    {
+        var roles = playerModel.fightRoles;
+
+        for(int i=0;i<roles.Length;i++)
+        {
+            fightRoleItems[i].SetRole(roles[i]);
+        }
+
+    }
+
+    //更新准备队列的显示
+    void UpdatePrepareView(dynamic ob = null )
+    {
+        var roles = playerModel.preRoles;
+
+        for (int i = 0; i < roles.Length; i++)
+        {
+            preRoleItems[i].SetRole(roles[i]);
+        }
+    }
+
+    void UpdateFightView(dynamic ob)
+    {          
+        fightRoleItems[ob.index].SetRole(playerModel.fightRoles[ob.index]);
+    }
+
+    void UpdatePrepareView(int index )
+    {
+
+        preRoleItems[ index].SetRole(playerModel.preRoles[ index]);
+    }
+
+
+
+    void AddEvent()
+    {
+        EventManager.RegistEvent(EventType.PreRoleUpdate, UpdatePrepareView);
+        EventManager.RegistEvent(EventType.PreRoleUpdate, UpdatePreCount);
+        EventManager.RegistEvent(EventType.FightRoleUpdate, UpdateFightView);
+        EventManager.RegistEvent(EventType.FightRoleUpdate, UpdateFightCount);
+        EventManager.RegistEvent(EventType.MoneyUpdate, UpdateMoneyView);
+        EventManager.RegistEvent(EventType.LevelUp, UpdateFightCount);
+    }
+
+    void RemoveEvent()
+    {
+        EventManager.UnRegistEvent(EventType.PreRoleUpdate, UpdatePrepareView);
+        EventManager.UnRegistEvent(EventType.PreRoleUpdate, UpdatePreCount);
+        EventManager.UnRegistEvent(EventType.FightRoleUpdate, UpdateFightView);
+        EventManager.UnRegistEvent(EventType.FightRoleUpdate, UpdateFightCount);
+        EventManager.UnRegistEvent(EventType.MoneyUpdate, UpdateMoneyView);
+        EventManager.UnRegistEvent(EventType.LevelUp, UpdateFightCount);
+    }
+}
+

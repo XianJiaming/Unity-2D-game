@@ -1,0 +1,74 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using DG.Tweening;
+
+public class WndFight:ViewBase
+{
+    RectTransform[] playerPositions;
+    RectTransform[] aiPositions;
+
+    GameObject[] playerRoleGos; 
+    GameObject[] aiRoleGos;
+
+    FightManager fightManager;
+    public override void Init()
+    {
+        base.Init();
+        layer = GameLayer.Wnd;
+
+
+    }
+
+    public override void OnFirstOpen()
+    {
+        base.OnFirstOpen();
+        fightManager = FightManager.instance;
+
+        int count = FightManager.Max_Fight_List_Number;
+
+        Transform playerPos = GetTransform("playerPosition");
+        playerPositions = new RectTransform[count];
+        for(int i=0;i<count;i++)
+        {          
+            playerPositions[i] = playerPos.Find(i.ToString()).GetComponent<RectTransform>();
+        }
+
+        Transform aiPos = GetTransform("aiPosition");
+        aiPositions = new RectTransform[count];
+        for (int i = 0; i < count; i++)
+        {
+            aiPositions[i] = aiPos.Find(i.ToString()).GetComponent<RectTransform>();
+        }
+
+        
+
+        playerRoleGos = new GameObject[count];
+        for(int i=0;i<count;i++)
+        {            
+            playerRoleGos[i] = playerPositions[i].Find("Role").gameObject;
+        }
+
+        aiRoleGos = new GameObject[count];
+        for(int i=0;i<count;i++)
+        {
+            aiRoleGos[i] = aiPositions[i].Find("Role").gameObject;
+        }
+
+    }
+
+    public override void OnShow()
+    {
+        base.OnShow();
+        
+        fightManager.BeginFight(PlayerModel.Instance().fightRoles, AIModel.instance.fightRoles, 
+            playerPositions, aiPositions, playerRoleGos, aiRoleGos);
+       
+
+    }
+
+    public override void OnHide() { }
+
+    public override void OnDispose() { }
+}

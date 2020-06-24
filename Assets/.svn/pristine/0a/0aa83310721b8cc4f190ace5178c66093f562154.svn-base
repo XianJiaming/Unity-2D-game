@@ -1,0 +1,47 @@
+﻿using System;
+using System.Collections.Generic;
+
+
+//暂时没用
+public  class CooperationManager
+{
+    //当前战斗队列中的羁绊
+    List<Cooperation> cooperations = new List<Cooperation>();
+    public static CooperationManager instance = new CooperationManager();
+    private CooperationManager()
+    {
+        Init();
+        AddEvent();
+    }
+    void Init()
+    {
+
+    }
+    //更新羁绊显示
+    void UpdateCooperView()
+    {
+
+    }
+    //找出生效的羁绊
+    void UpdateCooperEffect()
+    {
+
+    }
+
+    void OnCooperDataUpdate(object ob )
+    {
+
+    }
+
+    void AddEvent( )
+    {
+        EventManager.RegistEvent(EventType.CooperDataUpdate, OnCooperDataUpdate);
+    }
+    void RemoveEvent()
+    {
+        EventManager.UnRegistEvent(EventType.CooperDataUpdate, OnCooperDataUpdate);
+    }
+}
+
+
+

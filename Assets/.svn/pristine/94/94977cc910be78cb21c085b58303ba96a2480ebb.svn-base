@@ -1,0 +1,55 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System;
+
+public enum GameLayer
+{
+    BackRound = 0,
+    Charactor,
+    UI,
+    Wnd,
+    Tips
+}
+
+
+public class ViewManager
+{
+    public static string wndPath = "Prefab/UI";
+    public static Dictionary<string, ViewBase> wndMap = new Dictionary<string, ViewBase>();
+    public static Dictionary<string, Transform> layerMap = new Dictionary<string, Transform>();
+
+
+    public static void Regist(ViewBase wnd)
+    {
+        if (wndMap.ContainsKey(wnd.name))
+        {
+            Debug.LogError("已经存有该窗口实例对象--" + wnd.name);
+            return;
+        }
+        wndMap.Add(wnd.name, wnd);
+    }
+
+    public static void Init()
+    {
+        Transform canvas = GameObject.Find("Canvas").transform;
+        var enums = Enum.GetNames(typeof(GameLayer));
+        for(int i=0;i<enums.GetLength(0);i++)
+        {
+            GameObject go = new GameObject(enums[i]);
+            layerMap.Add(enums[i], go.transform);
+            go.transform.SetParent(canvas);
+        }
+    }
+
+    public static ViewBase Get(string name)
+    {
+        
+        return wndMap[name];
+    }
+
+
+
+
+
+}

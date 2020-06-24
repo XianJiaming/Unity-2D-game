@@ -1,0 +1,26 @@
+﻿using System;
+using System.Collections.Generic;
+
+//辅助角色完成状态
+public class RoleHelper
+{
+    //眩晕
+    public static void SetXuanYun(RoleBase role, float time)
+    {
+        role.SetStop(true);
+        TimeManager.RegistOneTime((id) =>
+        {
+            role.SetStop(false);
+        }, time);
+    }
+    //无敌
+    public static void SetWuDi(RoleBase role, float time)
+    {
+        role.SetWd(true);
+        TimeManager.RegistOneTime((id) =>
+        {
+            role.SetWd(false);
+        }, time);
+    }
+}
+

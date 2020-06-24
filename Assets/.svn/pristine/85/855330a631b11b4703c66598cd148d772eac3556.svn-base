@@ -1,0 +1,475 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace MyEquipEffect
+{
+    //装备特殊效果父类
+    public abstract class EquipEffect
+    {
+        public string name;
+        public string desc;
+
+        public void Init(int id)
+        {
+            var datas = DataClass.ConfigEquipEffectManager.Instance().allDatas[id];
+            name = datas.name;
+            desc = datas.desc;
+        }
+
+        public static EquipEffect CreatEffect(int id)
+        {
+            EquipEffect efct = Activator.CreateInstance(Type.GetType($"MyEquipEffect.EquipEffect{id.ToString()}")) as EquipEffect;
+            efct.Init(id);
+            return efct;
+        }
+
+        //在装备的穿戴和卸载的时候会被回调
+        public abstract void OnEquipUp(RoleBase owner);
+        public abstract void OnEquipDown(RoleBase owner);
+
+        //self 装备穿戴者 ,可以不使用这个方法
+        public virtual void Effect(RoleBase self, RoleBase[] target) { }
+        
+
+    }
+
+    //普通攻击吸血 10%
+    public class EquipEffect101 : EquipEffect
+    {
+        float param = 0.1f;
+        public override void Effect(RoleBase self, RoleBase[] target)
+        {
+            self.GetTreat((int)(self.HurtValue * param));
+        }
+
+        public override void OnEquipUp(RoleBase owner)
+        {
+            owner.afterAttack += Effect;
+        }
+        public override void OnEquipDown(RoleBase owner)
+        {
+            owner.afterAttack -= Effect;
+        }
+
+    }
+
+    //普通攻击吸血 20%
+    public class EquipEffect102 : EquipEffect
+    {
+        float param = 0.2f;
+        public override void Effect(RoleBase self, RoleBase[] target)
+        {
+            self.GetTreat((int)(self.HurtValue * param));
+        }
+
+        public override void OnEquipUp(RoleBase owner)
+        {
+            owner.afterAttack += Effect;
+        }
+        public override void OnEquipDown(RoleBase owner)
+        {
+            owner.afterAttack -= Effect;
+        }
+
+    }
+
+    //普通攻击吸血 30%
+    public class EquipEffect103 : EquipEffect
+    {
+        float param = 0.3f;
+        public override void Effect(RoleBase self, RoleBase[] target)
+        {
+            self.GetTreat((int)(self.HurtValue * param));
+        }
+
+        public override void OnEquipUp(RoleBase owner)
+        {
+            owner.afterAttack += Effect;
+        }
+        public override void OnEquipDown(RoleBase owner)
+        {
+            owner.afterAttack -= Effect;
+        }
+
+    }
+
+    //技能吸血 10 %
+    public class EquipEffect111 : EquipEffect
+    {
+        float param = 0.1f;
+
+        public override void Effect(RoleBase self, RoleBase[] target)
+        {
+            self.GetTreat((int)(self.SkillValue*param));
+        }
+
+        public override void OnEquipDown(RoleBase owner)
+        {
+            owner.afterSkill -= Effect;
+        }
+
+        public override void OnEquipUp(RoleBase owner)
+        {
+            
+            owner.afterSkill += Effect;
+        }
+    }
+
+    //技能吸血 20 %
+    public class EquipEffect112 : EquipEffect
+    {
+        float param = 0.2f;
+
+        public override void Effect(RoleBase self, RoleBase[] target)
+        {
+            self.GetTreat((int)(self.SkillValue * param));
+        }
+
+        public override void OnEquipDown(RoleBase owner)
+        {
+            owner.afterSkill -= Effect;
+        }
+
+        public override void OnEquipUp(RoleBase owner)
+        {
+
+            owner.afterSkill += Effect;
+        }
+    }
+
+    //技能吸血 30 %
+    public class EquipEffect113 : EquipEffect
+    {
+        float param = 0.3f;
+
+        public override void Effect(RoleBase self, RoleBase[] target)
+        {
+            self.GetTreat((int)(self.SkillValue * param));
+        }
+
+        public override void OnEquipDown(RoleBase owner)
+        {
+            owner.afterSkill -= Effect;
+        }
+
+        public override void OnEquipUp(RoleBase owner)
+        {
+
+            owner.afterSkill += Effect;
+        }
+    }
+
+    //普通攻击额外回蓝20点
+    public class EquipEffect12 : EquipEffect
+    {
+        public override void Effect(RoleBase self, RoleBase[] target)
+        {
+            self.AddMp(20);
+            UnityEngine.Debug.Log($"{self.name} 因为装备回蓝成功！");
+        }
+
+        public override void OnEquipDown(RoleBase owner)
+        {
+            owner.afterAttack -= Effect;
+        }
+
+        public override void OnEquipUp(RoleBase owner)
+        {
+            
+            owner.afterAttack += Effect;
+        }
+    }
+
+    //普通攻击让目标减少 5%的生命
+    public class EquipEffect13 : EquipEffect
+    {
+        public override void Effect(RoleBase self, RoleBase[] target)
+        {
+            foreach(var role in target)
+            {
+                int value = (int)(role.attributes[5] * 0.05f);
+                role.GetHurt(value);
+
+            }
+        }
+
+        public override void OnEquipDown(RoleBase owner)
+        {
+            owner.afterAttack -= Effect;
+        }
+
+        public override void OnEquipUp(RoleBase owner)
+        {
+            
+            owner.afterAttack += Effect;
+        }
+    }
+
+    //技能数值提升50%
+    public class EquipEffect14 : EquipEffect
+    {
+       
+
+        public override void OnEquipDown(RoleBase owner)
+        {
+            owner.skillParam /= 1.5f;
+        }
+
+        public override void OnEquipUp(RoleBase owner)
+        {
+            
+            owner.skillParam *= 1.5f;
+        }
+    }
+
+    //重击。每次普通攻击让目标30%概率眩晕2s
+    public class EquipEffect15 : EquipEffect
+    {
+        public override void Effect(RoleBase self, RoleBase[] target)
+        {
+            //
+            UnityEngine.Debug.Log("判断眩晕逻辑");
+            int tempInt = UnityEngine.Random.Range(1, 101);
+            if(tempInt<=30)
+            {
+                foreach(RoleBase role in target)
+                {
+                    role.SetStop(true);
+                    UnityEngine.Debug.Log($"{role.name}被眩晕拉");
+                    TimeManager.RegistOneTime((id) => { role.SetStop(false); }, 2);
+                }
+            }
+        }
+
+        public override void OnEquipDown(RoleBase owner)
+        {
+            owner.afterAttack -= Effect;
+        }
+        public override void OnEquipUp(RoleBase owner)
+        {
+            owner.afterAttack += Effect;
+        }
+    }
+
+    //神速。每次行动结束 速度+5
+    public class EquipEffect16 : EquipEffect
+    {
+        RoleBase owner;
+        int value = 5;
+        int tempValue = 0;
+        //战斗结束后增益的速度要还回去
+        //每回合结束时调用该方法
+        public override void Effect(RoleBase self, RoleBase[] target)
+        {          
+            self.attributes[2] += value;
+            tempValue += value;
+
+        }
+            
+        //战斗结束后 清除之前获得的属性
+        void AfterFight(dynamic dy = null)
+        {
+            owner.attributes[2] -= tempValue;
+            tempValue = 0;
+        }
+
+
+        public override void OnEquipDown(RoleBase owner)
+        {
+            this.owner = null;
+            EventManager.UnRegistEvent(EventType.FightEnd, AfterFight);
+            owner.afterAct -= Effect;
+            
+        }
+
+        public override void OnEquipUp(RoleBase owner)
+        {
+            EventManager.RegistEvent(EventType.FightEnd, AfterFight);
+            this.owner = owner;
+            owner.afterAct += Effect;
+        }
+    }
+
+    //提高闪避率 20%
+    public class EquipEffect17 : EquipEffect
+    {
+      
+        public override void OnEquipDown(RoleBase owner)
+        {
+            owner.missValue -= 0.2f;
+        }
+
+        public override void OnEquipUp(RoleBase owner)
+        {
+            owner.missValue += 0.2f;
+        }
+    }
+
+    //反弹受到的普通攻击50%的伤害(真实伤害)
+    public class EquipEffect18 : EquipEffect
+    {
+        void MyEffect(int value ,RoleBase attacker)
+        {
+            attacker.GetHurt( (int)(value * 0.5f));
+        }
+
+        public override void OnEquipDown(RoleBase owner)
+        {
+            owner.afterBeNormalAttack -= MyEffect;
+        }
+
+        public override void OnEquipUp(RoleBase owner)
+        {
+            owner.afterBeNormalAttack += MyEffect;
+        }
+    }
+
+    //提升暴击率20%
+    public class EquipEffect19 : EquipEffect
+    {
+        public override void OnEquipDown(RoleBase owner)
+        {
+            owner.critRate -= 0.2f;
+        }
+
+        public override void OnEquipUp(RoleBase owner)
+        {
+            owner.critRate += 0.2f;
+        }
+    }
+
+    //提升暴击伤害 50%
+    public class EquipEffect20 : EquipEffect
+    {
+        public override void OnEquipDown(RoleBase owner)
+        {
+            owner.critValue -= 0.5f;
+        }
+
+        public override void OnEquipUp(RoleBase owner)
+        {
+            owner.critValue += 0.5f;
+        }
+    }
+
+    //受到伤害时守御增加5，上限60
+    public class EquipEffect21 : EquipEffect
+    {
+        RoleBase owner;
+        int value = 5;
+        int curValue = 0;
+        int max = 60;
+        public override void OnEquipDown(RoleBase owner)
+        {
+            this.owner = null;
+            owner.afterGetHurt -= AddShouYu;
+            EventManager.UnRegistEvent(EventType.FightEnd, OnFightOver);
+        }
+
+        public override void OnEquipUp(RoleBase owner)
+        {
+            this.owner = owner;
+            owner.afterGetHurt += AddShouYu;
+            EventManager.RegistEvent(EventType.FightEnd, OnFightOver);
+        }
+
+        void AddShouYu()
+        {
+            if(curValue <60)
+            {
+                owner.attributes[1] += value;
+                curValue += value;
+            }
+            
+        }
+
+        void OnFightOver(dynamic dy)
+        {
+            owner.attributes[1] -= curValue;
+        }
+    }
+
+    //受到伤害时抗性加5,上限60
+    public class EquipEffect22 : EquipEffect
+    {
+        RoleBase owner;
+        int value = 5;
+        int curValue = 0;
+        int max = 60;
+        public override void OnEquipDown(RoleBase owner)
+        {
+            this.owner = null;
+            owner.afterGetHurt -= AddKangXing;
+            EventManager.UnRegistEvent(EventType.FightEnd, OnFightOver);
+        }
+
+        public override void OnEquipUp(RoleBase owner)
+        {
+            this.owner = owner;
+            owner.afterGetHurt += AddKangXing;
+            EventManager.RegistEvent(EventType.FightEnd, OnFightOver);
+        }
+
+        void AddKangXing()
+        {
+            if (curValue < 60)
+            {
+                owner.attributes[3] += value;
+                curValue += value;
+            }
+
+        }
+
+        void OnFightOver(dynamic dy)
+        {
+            owner.attributes[3] -= curValue;
+        }
+    }
+
+    //速度-50% 守御提升50%
+    public class EquipEffect23 : EquipEffect
+    {
+        int sudu = 0;
+        int shouyu = 0;
+        
+
+        public override void OnEquipDown(RoleBase owner)
+        {
+            owner.attributes[1] -= shouyu;
+            owner.attributes[2] += sudu;
+        }
+
+        public override void OnEquipUp(RoleBase owner)
+        {
+            var datas = DataClass.ConfigRoleManager.Instance().allDatas[owner.GetRoleId()];
+
+            int orSudu = datas.attributes[owner.GetLevel()][2];
+            int orShouyu = datas.attributes[owner.GetLevel()][1];
+
+            sudu = (int)(orShouyu * 0.5f);
+            shouyu = (int)(orShouyu * 0.5f);
+
+            owner.attributes[1] += shouyu;
+            owner.attributes[2] -= sudu;
+        }
+    }
+
+    //释放技能后回复400点血
+    public class EquipEffect24 : EquipEffect
+    {
+        
+        public override void Effect(RoleBase self, RoleBase[] target)
+        {
+            self.GetTreat( 400);
+        }
+
+        public override void OnEquipUp(RoleBase owner)
+        {
+            owner.afterSkill += Effect;
+        }
+        public override void OnEquipDown(RoleBase owner)
+        {
+            owner.afterSkill -= Effect;
+        }
+    }
+}

@@ -1,0 +1,167 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+public  class CooperationModel:ModelBase
+{
+    //当前战斗队列中的羁绊
+
+    public Dictionary<int, Cooperation> playerCoopers = new Dictionary<int, Cooperation>();
+    public Dictionary<int, Cooperation> aiCoopers = new Dictionary<int, Cooperation>();
+
+    PlayerModel playerModel;
+
+    protected override  void Init()
+    {
+        base.Init();
+        playerModel = ModelManager.Get("PlayerModel") as PlayerModel;
+        
+        EventManager.RegistEvent(EventType.FightRoleUpdate, OnFightListUpdate);
+        
+    }
+
+    //
+    public Cooperation GetPlayerCooper(int id)
+    {
+        if(!playerCoopers.ContainsKey(id))
+        {
+            playerCoopers.Add(id, new Cooperation(id));
+        }
+       
+        return playerCoopers[id];
+    }
+
+    //当战斗队列变化时
+    void OnFightListUpdate( dynamic ob)
+    {
+        if(ob.type == EnumType.RoleUpdateType.RemoveFight ) //更新剩下的羁绊，但移出的角色不修改属性
+        {
+            OnReduceFight( ob.role);
+        }
+        else if(ob.type == EnumType.RoleUpdateType.FightToPre) //更新剩下的羁绊，移出的角色需要修改属性
+        {
+            OnFightToPre(ob.role);
+        }
+        else if( ob.type == EnumType.RoleUpdateType.AddFight) //添加了新角色
+        {
+            OnAddFight(ob.role);
+        }
+    }
+    
+    //更新当前队列中所有的羁绊数据（要求所有的角色都应该是 同样的羁绊数据处理状态)
+    //可用于初始化
+    public void UpdatePlayerCooperData( )
+    {
+        Debug.Log("羁绊数据更新");
+        var playerRoles = playerModel.fightRoles;
+        for (int i = 0; i < playerRoles.Length; i++)
+        {
+            RoleBase role = playerRoles[i];
+            if (role != null)
+            {
+                int cooperId = role.GetCooperId();
+                if (playerCoopers.ContainsKey(cooperId))
+                {
+
+                }
+                else
+                {
+                    playerCoopers.Add(cooperId, new Cooperation(cooperId));
+
+                }
+                playerCoopers[cooperId].roles.Add(role);
+            }
+
+        }
+        
+        foreach (var v in playerCoopers.Values)
+        {            
+            v.Update(playerRoles);
+        }
+        //通知羁绊更新完成 （显示更新)
+        EventManager.ExecuteEvent(EventType.CooperDataUpdate);
+    }
+
+    //角色减少，该角色不需要更新属性
+    void OnReduceFight(RoleBase role )
+    {
+        //先判断是不是有这个羁绊
+        if(role == null)
+        {
+            Debug.Log("战斗队列减少的角色为kong");
+            return;
+        }
+
+        int cooperId = role.GetCooperId();
+           
+        playerCoopers[cooperId].RemoveNoEffect(playerModel.fightRoles, role);
+
+        EventManager.ExecuteEvent(EventType.CooperDataUpdate);
+    }
+    //fightTopre 减少属性
+    void OnFightToPre(RoleBase role )
+    {
+        if(role == null)
+        {
+           
+            return;
+        }
+        else
+        {
+            Cooperation cooper = GetPlayerCooper(role.GetCooperId());
+
+            cooper.RemoveUpdate(playerModel.fightRoles, role);
+
+            EventManager.ExecuteEvent(EventType.CooperDataUpdate);
+        }
+       
+
+    }
+    //角色增加了,让这个角色获得羁绊
+    void OnAddFight(RoleBase role)
+    {
+        if(role == null)
+        {
+            return;
+        }
+        else
+        {
+            Cooperation cooper = GetPlayerCooper(role.GetCooperId());
+
+            cooper.AddUpdate(playerModel.fightRoles, role);
+
+            EventManager.ExecuteEvent(EventType.CooperDataUpdate);
+
+        }
+
+
+    }
+
+    //更新羁绊显示
+    void UpdateCooperView()
+    {
+
+    }
+    //找出生效的羁绊
+    void UpdateCooperEffect()
+    {
+
+    }
+
+//     void OnCooperDataUpdate(object ob )
+//     {
+// 
+//     }
+// 
+//     void AddEvent( )
+//     {
+//         EventManager.RegistEvent(EventType.CooperDataUpdate, OnCooperDataUpdate);
+//     }
+//     void RemoveEvent()
+//     {
+//         EventManager.UnRegistEvent(EventType.CooperDataUpdate, OnCooperDataUpdate);
+//     }
+}
+
+
+

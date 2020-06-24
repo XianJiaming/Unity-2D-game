@@ -1,0 +1,37 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class WndGameStart:ViewBase
+{
+    
+    public override void Init() { }
+
+    public override void OnFirstOpen()
+    {
+
+
+
+    }
+
+    public override void OnShow() { }
+
+    public override void OnHide() { }
+
+    public override void OnDispose() { }
+
+    void OnClickStartGame()
+    {
+        SetVisible(false);
+    }
+    void OnLoadGame()
+    {
+
+    }
+
+    void OnClickExitGame()
+    {
+        Application.Quit();
+    }
+
+}

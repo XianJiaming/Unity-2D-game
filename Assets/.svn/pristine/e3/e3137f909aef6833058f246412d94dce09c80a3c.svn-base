@@ -1,0 +1,67 @@
+﻿using System;
+using System.Collections.Generic;
+using DataClass;
+using UnityEngine;
+
+public class GameLevelModel:ModelBase
+{
+    //当前等级
+    int currentLevel = 1;
+    //最大等级用来控制游戏是否结束
+    public const int MaxLevel = 10;
+    public int GetLevel()
+    {
+        return currentLevel;
+    }
+    public void SetLevel(int value)
+    {
+        currentLevel = value;
+    }
+    
+    Dictionary<int, int[]>[] roles;//数组，索引+1 为等级,， 元素的key为角色位置索引， value为id和等级
+
+    protected override void Init()
+    {
+        base.Init();
+        AddEvent();  
+    }
+
+    //游戏开始时加载关卡数据
+    void OnNewGame(object ob = null)
+    {
+        
+        roles = new Dictionary<int, int[]>[10];
+        var datas = ConfigGameLevelManager.Instance().allDatas;
+        foreach (var v in datas.Values)
+        {
+            roles[v.level - 1] = v.roles;
+        }
+
+    }
+
+    void AddEvent( )
+    {
+       
+        EventManager.RegistEvent(EventType.NewGameStart, OnNewGame);
+        EventManager.RegistEvent(EventType.NextLevel, OnNextLevel);
+    }
+
+    public void OnNextLevel(object ob )
+    {
+        currentLevel++;
+        SetAIRole();
+    }
+
+    public void SetAIRole()
+    {   
+        var currentRoles = roles[currentLevel - 1];
+        var aiModel = ModelManager.Get("AIModel") as AIModel;
+        aiModel.ClearRole();
+        //TODO 给ai队列加入装备
+        foreach (var v in currentRoles)
+        {
+            aiModel.SetAIRole(v.Key, v.Value[0], v.Value[1]);
+        }
+        aiModel.UpdateAiCooperData();
+    }
+}

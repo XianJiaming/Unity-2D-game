@@ -1,0 +1,88 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine.UI;
+using UnityEngine;
+
+//给玩家展示可选天赋
+class WndTalent : ViewBase
+{
+    RectTransform listTrasf;
+
+    GameObject talentItemGo;
+
+    TalentModel talentModel;
+
+    Dictionary<GameObject, MyTalent.Talent> goTalents = new Dictionary<GameObject, MyTalent.Talent>();
+    
+
+    public override void Init()
+    {
+        falseType = FalseType.destroy;
+        
+        base.Init();
+    }
+
+    public override void OnFirstOpen() {
+        base.OnFirstOpen();
+
+        PlayerModel playerModel = ModelManager.Get<PlayerModel>("PlayerModel");
+
+        talentItemGo = GetGameObject("container/list/talentItem");
+        listTrasf = GetRectTransform("container/list");
+
+        talentModel = ModelManager.Get<TalentModel>("TalentModel");
+        //int count = talentModel.talentIds.Count;
+
+        
+
+        //生成go，并且让go具备点击效果
+        //随机让go绑定3个天赋
+
+        var talants = DataHelp.GetRandom<int>(talentModel.talentIds, 3);
+
+        for (int i=0;i<3;i++)
+        {
+            var itemGo = GameObject.Instantiate(talentItemGo, listTrasf);
+            MyTalent.Talent talent = MyTalent.Talent.CreatTalent(talants[i]);
+
+            UIUtil.GetText(itemGo, "Text").text = talent.desc;
+
+            goTalents.Add(itemGo, talent);
+            UIUtil.SetUIOnClick(itemGo, (g) =>
+            {
+                playerModel.AddTalent(talent);
+                
+                SetVisible(false);
+                ViewManager.Get("WndPrepare").SetVisible(true);
+                ViewManager.Get("WndCooper").SetVisible(true);
+            });
+        }
+
+        talentItemGo.SetActive(false);
+    }
+
+    
+
+    public override void OnShow() {
+        base.OnShow();
+    }
+
+    public override void OnHide() {
+        base.OnHide();
+    }
+
+    public override void OnDispose() {
+        base.OnDispose();
+    }
+
+    void UpdateView( )
+    {
+        
+    }
+
+    void OnClickTalent( )
+    {
+
+    }
+}
+

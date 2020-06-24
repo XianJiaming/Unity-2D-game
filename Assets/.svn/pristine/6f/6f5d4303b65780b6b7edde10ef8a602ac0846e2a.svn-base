@@ -1,0 +1,67 @@
+﻿
+using System.Collections;
+using System.Collections.Generic;
+
+public class AIModel:ModelBase
+{
+   
+    public RoleBase[] fightRoles;
+
+    
+
+    protected override void  Init()
+    {
+        //EventManager.RegistEvent(EventType.NewGameStart, OnGameStar);
+        fightRoles = new RoleBase[9];
+    }
+
+    void OnGameStar(object ob = null)
+    {
+        
+    }
+
+    public void SetAIRole(int index, int id, int level, int wuqiId = 0, int fangjuId = 0)
+    {
+        RoleBase role = new RoleBase();
+        role.SetId(id, level);
+        if(wuqiId!=0)
+        role.AddEquip(new Equip(wuqiId));
+        if(fangjuId!=0)
+        role.AddEquip(new Equip(fangjuId));
+        fightRoles[index] = role;
+    }
+
+    public void ClearRole()
+    {
+        for(int i =0;i<fightRoles.Length;i++)
+        {
+            fightRoles[i] = null;
+        }
+    }
+    //ai角色增加羁绊效果,每回合战斗前触发
+    List<Entanglement> etls = new List<Entanglement>();
+
+    public void UpdateAiCooperData()
+    {
+        etls.Clear();
+             
+        for (int i = 0; i < fightRoles.Length; i++)
+        {
+            RoleBase role = fightRoles[i];
+            if (role != null)
+            {
+                etls.Add(new Cooperation(role.GetCooperId()));
+                etls.Add( Profession.CreatePro(role.GetProId()));
+            }
+
+        }
+        foreach (var v in etls)
+        {
+            v.Update(fightRoles);
+        }
+        //通知羁绊更新完成 （显示更新)
+        
+    }
+}
+
+

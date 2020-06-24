@@ -1,0 +1,61 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using DG.Tweening;
+
+class WndTips:ViewBase
+{
+    GameObject TipsGo;
+
+    List<GameObject> tipGoList;
+
+    public override void Init() {
+        base.Init();
+        layer = GameLayer.Tips;
+        SetVisible(true);
+    }
+
+    public override void OnFirstOpen() {
+        tipGoList = new List<GameObject>();
+        TipsGo = GetGameObject("tips");
+        TipsGo.SetActive(false);
+    }
+
+    public override void OnShow() { }
+
+    public override void OnHide() { }
+
+    public override void OnDispose() { }
+
+    public void ShowMsg( string content , Vector3 position)
+    {
+        GameObject tip;
+        if (tipGoList.Count == 0)
+        {
+            tip = GameObject.Instantiate(TipsGo, go.transform);
+            
+        }
+        else
+        {
+            tip = tipGoList[tipGoList.Count - 1];
+            
+            tipGoList.Remove(tip);
+        }
+        tip.SetActive(true);
+        Text t = tip.GetComponent<Text>();
+        t.text = content;
+        t.color = Color.white;
+
+        
+        t.DOColor(Color.clear, 3f).OnComplete(
+            () =>
+            {
+                tip.SetActive(false);
+                tipGoList.Add(tip);
+            });
+        tip.transform.position = position;
+        t.transform.DOLocalMoveY(t.transform.localPosition.y + 80, 1.5f);
+    }
+
+}

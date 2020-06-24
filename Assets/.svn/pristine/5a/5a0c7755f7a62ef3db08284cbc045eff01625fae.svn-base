@@ -1,0 +1,130 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace MyFightEffect {
+
+
+    public class EffectFactory
+    {
+        public static IFightEffect CreatInstance(int id)
+        {
+            return Activator.CreateInstance(Type.GetType($"MyFightEffect.Effect{id.ToString()}")) as IFightEffect;
+        }
+    }
+
+
+
+    public abstract class IFightEffect
+    {
+        protected int time;
+        protected int value;
+        public void Init( int time,int value)
+        {
+            this.time = time;
+
+            this.value = value;
+        }
+
+        public abstract void Effect(RoleBase role);      
+    }
+
+    //眩晕
+    public class Effect10 : IFightEffect
+    {
+
+        public override void Effect(RoleBase role)
+        {
+            role.SetStop(true);
+
+            int timeId = TimeManager.Regist(
+                (int id) =>
+                {
+                    role.SetStop(false);
+                    
+                },
+                time, 0, 1);
+
+           
+        }
+    }
+    //减速
+    public class Effect11 : IFightEffect
+    {
+        public override void Effect(RoleBase role)
+        {
+            int changeValue = (int)(role.attributes[0] * (1.0f * value) / 100);
+            role.attributes[2] -= changeValue;
+
+            int timeId = TimeManager.Regist(
+                (int id) =>
+                {
+                    role.attributes[2] += changeValue;
+                },
+                time, 0, 1);
+
+        }
+    }
+
+    //秒杀
+    public class Effect12 : IFightEffect
+    {
+        public override void Effect(RoleBase role)
+        {
+            role.Die();
+        }
+    }
+
+    //无敌
+    public class Effect13 : IFightEffect
+    {
+        public override void Effect(RoleBase role)
+        {
+            role.SetWd(true);
+            int timeId = TimeManager.Regist(
+                (int id) =>
+                {
+                    role.SetWd(false);
+                    UnityEngine.Debug.Log("眩晕结束了哈");
+                },
+                time, 0, 1);
+        }
+    }
+
+
+    //治疗
+    public class Effect14 : IFightEffect
+    {
+        public override void Effect(RoleBase role)
+        {
+            role.GetTreat(value);
+        }
+    }
+
+    //伤害
+    public class Effect15 : IFightEffect
+    {
+        public override void Effect(RoleBase role)
+        {
+            role.BeSkillAttack(value);
+            UnityEngine.Debug.Log(role.name + "被伤害技能打中");
+        }
+    }
+
+    //沉默
+    public class Effect16 : IFightEffect
+    {
+        public override void Effect(RoleBase role)
+        {
+            role.SetSilent(false);
+            int timeId = TimeManager.Regist(
+                (int id) =>
+                {
+                    role.SetSilent(true);
+                },
+                time, 0, 1);
+        }
+    }
+}
+
+
+

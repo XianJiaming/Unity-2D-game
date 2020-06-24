@@ -1,0 +1,15 @@
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+
+namespace DataClass
+{
+    public class ConfigSkill{
+        public int id;
+        public string name;
+        public int[] targetType;
+        public int targetQueue;
+        public Dictionary<int, int[]> idValue;
+    }
+}

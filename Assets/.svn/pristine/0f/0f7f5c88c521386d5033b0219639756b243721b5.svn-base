@@ -1,0 +1,85 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using System;
+
+
+/// <summary>
+/// 在wndbase中必须设置wnd的层级
+/// </summary>
+public class ViewBase
+{
+    public string name;
+    GameObject go;
+    protected GameLayer layer;
+    protected bool isActive;
+    protected bool isLoaded;
+    public ViewBase()
+    {
+        isActive = false;
+        isLoaded = false;
+        name = this.GetType().Name;
+        ViewManager.Regist(this);
+        this.layer = GameLayer.Wnd;
+        Init();
+    }
+    public virtual void Init() { }
+
+    public virtual void OnFirstOpen() { }
+
+    public virtual void OnShow() { }
+
+    public virtual void OnHide() { }
+
+    public virtual void OnDispose() { }
+
+    public virtual void SetVisible(bool value)
+    {
+        if (isActive == value) return;
+        
+        else if(value&&!isActive)
+        {
+            if(!isLoaded)
+            {
+                go = ResourceManager.LoadAsset<GameObject>(ViewManager.wndPath + name);
+                GameObject.Instantiate(go, ViewManager.layerMap[layer.ToString()]);
+                go.SetActive(value);
+                OnFirstOpen();
+                OnShow();
+            }
+            else
+            {
+                go.SetActive(value);                      
+                OnShow();
+            }
+
+        }
+        else if(value == false && isActive)
+        {
+            go.SetActive(false);
+            OnHide();
+        }
+    }
+    public GameObject GetGameObject(string path)
+    {
+        return go.transform.Find(path).gameObject;
+    }
+
+    public Transform GetTransform(string path)
+    {
+        return go.transform.Find(path);
+    }
+    public Image GetImage(string path)
+    {
+        return go.transform.Find(path).GetComponent<Image>();
+    }
+    public Text GetText(string path)
+    {
+        return go.transform.Find(path).GetComponent<Text>();
+    }
+    public bool GetActive()
+    {
+        return isActive;
+    }
+}

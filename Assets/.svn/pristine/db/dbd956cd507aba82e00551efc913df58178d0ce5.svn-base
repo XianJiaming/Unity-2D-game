@@ -1,0 +1,63 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class ConfigManager
+{
+    public static Dictionary<string, Dictionary<int, dynamic>> configMap = new Dictionary<string, Dictionary<int, dynamic>>();
+        
+    
+    public static dynamic GetConfig(string configName, int id )
+    {
+        if( !configMap.ContainsKey(configName))
+        {
+            Debug.LogError("数据表中没有该表:" + configName);
+            return null;
+        }
+        else
+        {
+            if( !configMap[configName].ContainsKey(id))
+            {
+                Debug.LogError($"{configName}没有该id项{id}");
+                return null;
+            }
+            else
+            {
+                return configMap[configName][id];
+            }
+        }
+      
+    }
+
+    public static Dictionary<int, dynamic> GetConfigs(string configName)
+    {
+        if (!configMap.ContainsKey(configName))
+        {
+            Debug.LogError("数据表中没有该表:" + configName);
+            return null;
+        }
+        return configMap[configName];
+    }
+
+    public static void Init()
+    {
+        dynamic[] assets = Resources.LoadAll<ScriptableObject>("DataAsset");
+        for(int i=0;i<assets.Length;i++)
+        {
+           
+            var tempDic = new Dictionary<int, object>();
+            foreach(dynamic v in assets[i].allDatas)
+            {
+                tempDic.Add(v.id, v);
+            }
+           
+            configMap.Add(assets[i].name, tempDic);
+
+
+        }
+    }
+    
+
+
+
+}

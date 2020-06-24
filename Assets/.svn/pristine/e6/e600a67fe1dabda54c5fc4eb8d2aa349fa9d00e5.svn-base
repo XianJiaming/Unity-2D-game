@@ -1,0 +1,572 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using DG.Tweening;
+using UnityEngine.UI;
+using DataClass;
+using System;
+
+// 0	"力量"
+// 1	"守御"
+// 2	"速度"
+// 3	"抗性"
+// 4	"精神"
+// 5	"生命"
+// 6	"法力"
+// 7	"当前生命"
+// 8	"当前内力"
+
+
+public class RoleBase
+{
+    //每个人两个格子,一个武器，一个防具
+    // 0 武器 1 防具
+    //装备相关------------------------------------------------------------------------------------------------
+    Equip[] equips = new Equip[2];
+    public Equip GetEquip(int index)
+    {
+        return equips[index];
+    }
+
+    //获得新装备
+    public bool AddEquip(Equip equip)
+    {
+        Equip curEquip = equips[equip.equipType];
+
+        if(curEquip!=null)
+        {
+            //curEquip.UnLoad(this);
+            WndTips.ShowTips("该角色已经有同类型的装备了，不可替换");
+            return false;
+        }
+        else
+        {
+            equips[equip.equipType] = equip;
+
+            equip.Load(this);
+            return true;
+        }
+        //return curEquip;
+    }
+    //卸载装备,一次性将身上的所有装备送回背包（目前是贩卖角色时调用
+    public void RemoveAllEquip( )
+    {
+        var model = ModelManager.Get<EquipModel>("EquipModel");
+        for (int i=0;i<equips.Length;i++)
+        {
+            if (equips[i] == null)
+                continue;
+
+            var equip = RemoveEquip(i);
+
+            model.AddEquip(equip);                       
+        }
+    }
+
+    Equip RemoveEquip(int index)
+    {
+        var equip = equips[index];
+        equips[index] = null;
+        equip.UnLoad(this);
+        return equip;
+    }
+
+    
+    //装备相关------------------------------------------------------------------------------------------------
+
+
+    //public const string roleModelPath = "Prefab/RoleModel/";
+    //属性
+    int id;
+    
+    public string name;
+    //所有的属性存在这里
+    public float[] attributes = new float[9];
+    //种族羁绊id
+    
+    public int[] etlId = new int[2];
+    public int GetCooperId()
+    {
+        return etlId[0];
+    }
+    public int GetProId()
+    {
+        return etlId[1];
+    }
+
+
+    public int GetRoleId()
+    {
+        return id;
+    }
+    int level;
+    public int GetLevel( )
+    {
+        return level;
+    }
+    int cost; //初始价值
+    int price = 0;
+    public int GetPrice()
+    {
+        return price;
+    }
+    //本回合造成的伤害
+    public int HurtValue
+    {
+        private set;
+        get;
+    }
+    //本回合技能的数值
+    public int SkillValue
+    {
+        set;
+        get;
+    }
+    /// <summary>
+    /// 技能数据参数，技能数值会乘以这个参数
+    /// </summary>
+    public float skillParam = 1.0f; //技能数值参数，影响技能数值
+
+    //是否在战斗中
+    public bool isFight = false;
+
+    //gameObject组件
+    Image hpImg;
+    Text nameText;
+    GameObject uiGo;
+    //行动计时
+    bool isStop = false; //为true就 会暂停
+    float actTime = 0f;
+
+    //战斗相关
+    public RoleBase[] team;
+    RoleBase[] enemy;
+    public int positionIndex = -1;
+
+    //技能
+    public SkillBase skill;
+
+    bool isSilent = false; //被沉默后就不能回蓝了
+    public void SetSilent(bool value)
+    {
+        isSilent = value;
+    }
+
+    public void SetTeamAndEnemy(RoleBase[] team, RoleBase[] enemy)
+    {
+        this.team = team;
+        this.enemy = enemy;
+    }
+    //战斗前做初始化，血回满，蓝量清空之类的
+    public void BeginFight()
+    {
+        isFight = true;
+        BeforeFight();
+        HurtValue = 0;
+        SkillValue = 0;
+        actTime = 0;
+        //hpImg.gameObject.SetActive(true);
+        //attributes[7] = attributes[5];
+        SetHp(attributes[5]);
+        //内力归0
+        attributes[8] = 0;
+        
+    }
+    //角色新建时 从配置表里读数据,传入的是 数据项的id，不是角色id
+    public void SetId( int id , int level = 1)
+    {
+        var data = ConfigRoleManager.Instance().allDatas[id];
+        this.id = id;
+        name = data.name;
+        cost = data.cost;
+
+        SetLevel(level);
+        etlId[0] = data.cooperId;
+        etlId[1] = data.proId;
+        
+
+        for (int i = 0; i < data.attributes[level - 1].Length; i++)
+        {
+            attributes[i] = data.attributes[level-1][i];
+        }
+        UpdateView();
+
+        //创建技能对象
+        if(data.skillId != 0)
+        {
+             skill = new SkillBase();
+             skill.SetId(data.skillId, level, this);
+        }
+       
+        //获取fight gameobject资源 并且实例化，实例化后隐藏
+        //fightRole = ObjectPool.Instance().GetRoleGo(name);
+    }
+    
+    //被停了  可以用来 眩晕
+    public void SetStop(bool value)
+    {
+        isStop = value;
+    }
+
+    public void SetUIGo(GameObject go)
+    {
+        this.uiGo = go;
+        nameText = go.transform.Find("name").GetComponent<Text>();
+        hpImg = UIUtil.GetImage(go, "hpImg");
+        
+    }
+    public GameObject GetGo()
+    {
+        return uiGo;
+    }
+    //设置战斗中的角色模型
+    //----------------------------------------------------战斗相关
+    public GameObject fightRole;
+    Text hpText;
+    Text mpText;
+    Text fightNameText;
+    public void SetFightGo(GameObject go)
+    {
+        fightRole = go;
+        
+        hpText = UIUtil.GetText(fightRole, "hp");
+        mpText = UIUtil.GetText(fightRole, "mp");
+        fightNameText = UIUtil.GetText(fightRole, "name");
+        fightRole.SetActive(true);
+        UpdateFightGo();
+    }
+    void UpdateFightGo()
+    {
+        hpText.text = attributes[7].ToString();
+        mpText.text = attributes[8].ToString();
+        fightNameText.text = name;
+    }
+
+    void UpdateHpView()
+    {
+        if(hpText)
+        hpText.text = attributes[7].ToString();
+    }
+    void UpdateMpView()
+    {
+        if(mpText)
+        mpText.text = attributes[8].ToString();
+    }
+
+
+    //----------------------------------------------------战斗相关
+
+
+    public void UpdateView()
+    {
+        if(nameText!=null)
+        nameText.text = name;
+    }
+    public float missValue = 0.1f;
+    //闪避成功了吗
+    bool Miss()
+    {
+        return UnityEngine.Random.Range(0, 1.0f) < missValue;
+    }
+    //受到的普通攻击伤害
+    int normalHurtValue = 0;
+    //对外挨打的接口，是普通攻击的
+    public Action<int, RoleBase> afterBeNormalAttack;
+
+    void AfterBeNomAtk(RoleBase attacker)
+    {
+        afterBeNormalAttack?.Invoke(normalHurtValue, attacker);
+    }
+
+    public void BeAttack(int hurtValue, RoleBase attacker = null)
+    {
+        if(Miss())
+        {
+            Debug.Log("闪避成功！");
+            return;
+        }
+        else
+        {
+            EventManager.ExecuteEvent(EventType.RoleBeAttack, this);
+            float param = 1.0f;
+            float shouyu = attributes[1];
+            if (shouyu > 0)
+            {
+                param = 1 - shouyu * 0.03f / (1 + shouyu * 0.03f);
+            }
+            else
+            {
+                param = 2 - Mathf.Pow(0.98f, -shouyu);
+            }
+            normalHurtValue = (int)(hurtValue * param);
+
+            int mp = UnityEngine.Random.Range(Mathf.Min(25, normalHurtValue / 10), Mathf.Min(50, normalHurtValue / 5));
+            AddMp(mp);
+
+            GetHurt(normalHurtValue);
+
+            AfterBeNomAtk(attacker);
+        }
+        
+        
+    }
+    //被技能打了
+    public void BeSkillAttack(int hurtValue )
+    {
+        int getHurtValue = (int)(hurtValue - attributes[3] * 0.1f);
+        GetHurt(getHurtValue);
+    }
+    //是否无敌
+    bool isWd = false;
+    public void SetWd(bool value)
+    {
+        isWd = value;
+    }
+    /// <summary>
+    /// 承受伤害的参数
+    /// </summary>
+    public float getHurtParam = 1.0f;
+
+    public Action afterGetHurt;
+    void AfterGetHurt()
+    {
+        afterGetHurt();
+    }
+
+    //受到伤害,无论什么伤害都回走这个接口
+    public void GetHurt(int value)
+    {
+
+        int hurtValue = (int)(value * getHurtParam);
+
+        if (isWd) value = 0;
+        SetHp(attributes[7] - hurtValue);
+        var wndTips = ViewManager.Get("WndTips") as WndTips;
+        wndTips.ShowMsg(value.ToString(), fightRole.transform.position);
+        
+    }
+    //获得治疗
+    public void GetTreat(int value )
+    {
+        SetHp(attributes[7] + value);
+        var wndTips = ViewManager.Get("WndTips") as WndTips;
+        wndTips.ShowMsg($"HP+{ value.ToString()}", fightRole.transform.position);
+    }
+
+    //升一级
+    //角色没有升级，触发升级时就是原角色被销毁，创建一个新角色
+    void SetLevel(int value)
+    {
+        level = value;
+        price = level * cost;
+    }
+
+    void SetHp( int value)
+    {
+        attributes[7] = value;
+        if(attributes[7] > attributes[5])
+        {
+            attributes[7] = attributes[5];
+        }
+
+        UpdateHpView();
+
+        if (attributes[7] <= 0)
+            Die();
+    }
+    void SetHp(float value)
+    {
+        SetHp( (int)(value));
+    }
+
+    void SetMp(int value)
+    {
+        attributes[8] = value;
+        UpdateMpView();
+    }
+    void SetMp(float value)
+    {
+        SetMp((int)value);
+    }
+    //计算出我产出的普通攻击伤害
+    int GetAttackValue()
+    {
+        bool isCrit = UnityEngine.Random.Range(0, 1.0f)<=critRate;
+        if (!isCrit)
+            return (int)(attributes[0] * attackValueParam);
+        else
+            return (int)(attributes[0] * attackValueParam * critValue);
+    }
+
+    //暴击率
+    public float critRate = 0.2f;
+    /// <summary>
+    /// 暴击伤害比率
+    /// </summary>
+    public float critValue = 2.0f; 
+
+    //普通攻击
+    public float attackValueParam = 1.0f; //影响普通攻击的参数
+    public void Attack(RoleBase target )
+    {
+        if (target == null)
+        {
+            Debug.LogError(name+"攻击的目标为空");
+            return;
+        }
+        HurtValue = GetAttackValue();    //获取输出伤害
+
+        Vector3 orPosition = fightRole.transform.position;
+
+        fightRole.transform.DOMove(target.fightRole.transform.position, 0.5f).OnComplete(
+            ( ) =>
+            {
+                int mpValue = (int)attributes[4];
+              
+                target.BeAttack(HurtValue, this);
+                
+                AddMp(80); //内力增加
+
+                AfterAttack(target);
+
+                fightRole.transform.DOMove(orPosition, 0.5f).OnComplete(AfterAct);
+            }
+            );
+    }
+    //增加mp
+    public void AddMp(int value)
+    {
+        SetMp(attributes[8] + value);
+        if (attributes[8] > attributes[6])
+            SetMp(attributes[6]);
+    }
+
+
+    RoleBase GetTarget()
+    {
+        RoleBase target = null;
+
+        for(int i=0;i<enemy.Length;i++)
+        {
+            if (enemy[i] != null)
+            {
+                target = enemy[i];
+                break;
+            }
+        }
+        return target;
+    }
+    //战斗结束时调用
+    public void EndFight()
+    {
+        //ObjectPool.Instance().SaveRoleGo(name, fightRole);
+    }
+
+    //角色死亡时 告诉别人他挂了
+    public void Die()
+    {
+        isFight = false;
+        fightRole.SetActive(false);
+        EventManager.ExecuteEvent(EventType.RoleDie, this);
+    }
+
+    //使用速度属性来判断是否可以执行
+    public bool CanAct()
+    {
+        return actTime >= 3*0.5f/(1+ (attributes[2] - 3)*0.1f );
+    }
+
+
+    public Action<RoleBase> beforeFight; //战斗开始时调用
+    public Action beforeAct;
+    public Action<RoleBase, RoleBase[]> afterAct;
+    public Action<RoleBase,RoleBase[]> afterAttack;
+    public Action<RoleBase, RoleBase[]> afterSkill;
+
+    void BeforeFight( )
+    {
+        beforeFight?.Invoke(this);
+    }
+
+    void AfterAttack(RoleBase target)
+    {
+        afterAttack?.Invoke(this, new RoleBase[] { target });
+    }
+    void AfterSkill(RoleBase[] target)
+    {
+        afterSkill?.Invoke(this, target);
+    }
+
+    void BeforeAct()
+    {
+        beforeAct?.Invoke();
+    }
+    void AfterAct()
+    {
+        afterAct?.Invoke(this, null);
+        FightManager.instance.isAnyoneAct = false;
+    }
+    //开始行动，判断是攻击还是使用技能
+    public void Act()
+    {
+        FightManager.instance.isAnyoneAct = true;
+        actTime = 0f;
+
+        BeforeAct();
+
+        EventManager.ExecuteEvent(EventType.RoleAct, this);
+
+        //使用技能
+        if(attributes[8] >= attributes[6] & skill!=null)
+        {
+            UseSkill();
+        }
+        else
+        {
+            Attack(GetTarget());
+        }      
+    }
+   
+    public void UseSkill()
+    {
+        SkillValue = 0;
+        var wndTips = ViewManager.Get<WndTips>("WndTips");
+
+        wndTips.ShowMsg(skill.name, fightRole.transform.position);
+
+        var target = skill.Use(team, enemy);
+
+        //用完技能后蓝条归0
+        SetMp(0);
+
+        AfterSkill(target);
+    }
+
+    public void Update()
+    {
+        //如果别人在行动就停止
+        if (FightManager.instance.isAnyoneAct) return;
+        //如果自己不能行动就停止
+        if (isStop) return;
+        
+
+        actTime += Time.deltaTime;
+        if (CanAct())
+            Act();
+    }
+    public EnumType.FightListType fightListType;
+
+    public void SetFightIndex(EnumType.FightListType type, int index )
+    {
+        positionIndex = index;
+        fightListType = type;
+
+    }
+    //战斗前将其移动至对应的战斗位置
+    //index为该角色在所在战斗队列的位置索引
+//     public void SetFightPosition(Vector3 position , int index)
+//     {
+//         fightRole.transform.position = position;
+//         positionIndex = index;
+//     }
+}

@@ -1,0 +1,84 @@
+using System.Collections.Generic;
+using System;
+namespace DataClass
+{
+
+    public class ConfigRoleShopManager : ConfigDataManager<ConfigRoleShopManager,ConfigRoleShop>
+
+    {
+    
+    public override void Init( )
+    {
+    name = "ConfigRoleShop";
+    ConfigRoleShop config = null;
+    
+    config = new ConfigRoleShop();
+    config.id = 1;
+    config.level = 1;
+    config.rate = new int[]{15,15,15,20,35};
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRoleShop();
+    config.id = 2;
+    config.level = 2;
+    config.rate = new int[]{15,15,15,20,35};
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRoleShop();
+    config.id = 3;
+    config.level = 3;
+    config.rate = new int[]{15,15,15,20,35};
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRoleShop();
+    config.id = 4;
+    config.level = 4;
+    config.rate = new int[]{15,15,15,20,35};
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRoleShop();
+    config.id = 5;
+    config.level = 5;
+    config.rate = new int[]{15,15,15,20,35};
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRoleShop();
+    config.id = 6;
+    config.level = 6;
+    config.rate = new int[]{15,15,15,20,35};
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRoleShop();
+    config.id = 7;
+    config.level = 7;
+    config.rate = new int[]{15,15,15,20,35};
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRoleShop();
+    config.id = 8;
+    config.level = 8;
+    config.rate = new int[]{15,15,15,20,35};
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRoleShop();
+    config.id = 9;
+    config.level = 9;
+    config.rate = new int[]{15,15,15,20,35};
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRoleShop();
+    config.id = 10;
+    config.level = 10;
+    config.rate = new int[]{15,15,15,20,35};
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRoleShop();
+    config.id = 11;
+    config.level = 11;
+    config.rate = new int[]{15,15,15,20,35};
+    allDatas.Add( config.id, config)
+;
+    base.Init();
+    }
+}
+}

@@ -1,0 +1,195 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using DG.Tweening;
+using UnityEngine.UI;
+using DataClass;
+
+
+// 0	"力量"
+// 1	"悟性"
+// 2	"体质"
+// 3	"根骨"
+// 4	"灵巧"
+// 5	"生命"
+// 6	"内力"
+// 7    "当前生命"
+// 8    "当前内力" 
+public class RoleBase
+{
+    //属性
+    int id;
+    string name;
+    //所有的属性存在这里
+    int[] attributes = new int[9];
+    //职业羁绊id
+    int cooperId;
+    public int GetCooperId()
+    {
+        return cooperId;
+    }
+    public int GetRoleId()
+    {
+        return id;
+    }
+
+    //gameObject组件
+    Text nameText;
+    GameObject go;
+    //行动计时
+    bool isStop = false;
+    float actTime = 0f;
+
+    //战斗相关
+    public RoleBase[] team;
+    RoleBase[] enemy;
+    public int positionIndex = -1; 
+
+
+    public void SetTeamAndEnemy(RoleBase[] team, RoleBase[] enemy)
+    {
+        this.team = team;
+        this.enemy = enemy;
+    }
+    //战斗前做初始化，血回满，蓝量清空之类的
+    public void BeginFight()
+    {
+        
+        attributes[7] = attributes[5];
+        attributes[8] = attributes[6];
+    }
+    //角色新建时 从配置表里读数据
+    public void SetId( int roleId )
+    {
+        var data = ConfigRoleManager.Instance().allDatas[roleId];
+
+        name = data.name;
+        id = roleId;
+        cooperId = data.cooperId;
+
+        for (int i = 0; i < data.attributes.Length; i++)
+        {
+            attributes[i] = data.attributes[i];
+        }
+
+        UpdateView();
+    }
+
+    public void SetGo(GameObject go)
+    {
+        this.go = go;
+        nameText = go.transform.Find("name").GetComponent<Text>();
+    }
+
+    public void Init( int roleId, GameObject go = null )
+    {
+       
+        this.go = go;
+          
+        SetId(roleId);
+        
+    }
+
+    public void UpdateView()
+    {
+        if(nameText!=null)
+        nameText.text = name;
+    }
+
+    public void BeAttack(int hurtValue, RoleBase attacker = null)
+    {
+        int getHurtValue = hurtValue - attributes[3];
+        getHurtValue = 100;
+        GetHurt(getHurtValue);
+        
+    }
+    void GetHurt(int value)
+    {
+        attributes[5] -= value;
+        var wndTips = ViewManager.Get("WndTips") as WndTips;
+        wndTips.ShowMsg(value.ToString(), go.transform.position);
+        if (attributes[5] <= 0)
+            Die();
+    }
+
+    public void Attack(RoleBase target )
+    {
+        if (target == null)
+        {
+            Debug.Log(name);
+        }
+
+
+        int hurtValue = attributes[0];
+        
+
+        Vector3 orPosition = go.transform.position;
+        go.transform.DOMove(target.go.transform.position, 0.5f).OnComplete(
+            ( ) =>
+            {
+                
+                target.BeAttack(hurtValue);
+                go.transform.DOMove(orPosition, 0.5f).OnComplete(AfterAct);
+            }
+            );
+
+    }
+    RoleBase GetTarget()
+    {
+        RoleBase target = null;
+
+        for(int i=0;i<enemy.Length;i++)
+        {
+            if (enemy[i] != null)
+            {
+                target = enemy[i];
+                break;
+            }
+        }
+        return target;
+    }
+    public void UseSkill(RoleBase target)
+    {
+
+    }
+    //角色死亡时 告诉别人他挂了
+    public void Die()
+    {
+        GameObject.Destroy(go);
+        EventManager.ExecuteEvent(EventType.RoleDie, this);
+    }
+    public bool CanAct()
+    {
+        return actTime >= 1f;
+    }
+
+    public void Act()
+    {
+        FightManager.instance.isAnyoneAct = true;
+        actTime = 0f;
+        Attack(GetTarget());
+    }
+    void AfterAct()
+    {
+        FightManager.instance.isAnyoneAct = false;
+    }
+
+    public void Update()
+    {
+        if (FightManager.instance.isAnyoneAct) return;
+        if (isStop) return;
+        
+
+        actTime += Time.deltaTime;
+        if (CanAct())
+            Act();
+    }
+    //战斗前将其移动至对应的战斗位置
+    public void SetFightPosition(RectTransform parent , int index)
+    {
+       
+        go.transform.SetParent(parent);
+        go.transform.localPosition = Vector3.zero;
+        positionIndex = index;
+    }
+}

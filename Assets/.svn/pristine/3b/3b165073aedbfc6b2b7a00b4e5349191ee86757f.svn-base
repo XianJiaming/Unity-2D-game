@@ -1,0 +1,54 @@
+using System.Collections.Generic;
+using System;
+namespace DataClass
+{
+
+    public class ConfigRoleManager : ConfigDataManager<ConfigRoleManager,ConfigRole>
+
+    {
+    
+    public override void Init( )
+    {
+    name = "ConfigRole";
+    ConfigRole config = null;
+    
+    config = new ConfigRole();
+    config.id = 10;
+    config.name = "测试角色1";
+    config.attributes = new int[][]{new int[]{50,100,20,30,50,100,80},new int[]{50,100,20,30,50,100,80},new int[]{50,100,20,30,50,100,80}};
+    config.cooperId = 100;
+    config.cost = 1;
+    config.skillId = 1001;
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRole();
+    config.id = 11;
+    config.name = "测试角色2";
+    config.attributes = new int[][]{new int[]{20,50,100,60,70,300,50},new int[]{20,50,100,60,70,300,50},new int[]{20,50,100,60,70,300,50}};
+    config.cooperId = 100;
+    config.cost = 2;
+    config.skillId = 1001;
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRole();
+    config.id = 12;
+    config.name = "测试角色3";
+    config.attributes = new int[][]{new int[]{20,50,100,60,70,300,51},new int[]{20,50,100,60,70,300,51},new int[]{20,50,100,60,70,300,51}};
+    config.cooperId = 100;
+    config.cost = 3;
+    config.skillId = 1001;
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRole();
+    config.id = 13;
+    config.name = "测试角色4";
+    config.attributes = new int[][]{new int[]{20,50,100,60,70,300,52},new int[]{20,50,100,60,70,300,51},new int[]{20,50,100,60,70,300,51}};
+    config.cooperId = 101;
+    config.cost = 4;
+    config.skillId = 1001;
+    allDatas.Add( config.id, config)
+;
+    base.Init();
+    }
+}
+}

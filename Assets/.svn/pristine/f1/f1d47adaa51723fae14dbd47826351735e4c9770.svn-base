@@ -1,0 +1,35 @@
+﻿
+public class AIModel:ModelBase
+{
+   
+    public RoleBase[] fightRoles;
+
+    
+
+    protected override void  Init()
+    {
+        EventManager.RegistEvent(EventType.GameStart, OnGameStar);
+    }
+
+    void OnGameStar(object ob = null)
+    {
+        fightRoles = new RoleBase[9];
+    }
+
+    public void SetAIRole(int index, int id, int level)
+    {
+        RoleBase role = new RoleBase();
+        role.SetId(id, level);
+        fightRoles[index] = role;
+    }
+
+    public void ClearRole()
+    {
+        for(int i =0;i<fightRoles.Length;i++)
+        {
+            fightRoles[i] = null;
+        }
+    }
+}
+
+

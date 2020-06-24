@@ -1,0 +1,221 @@
+﻿using System;
+using System.Collections.Generic;
+
+//创世 ,每秒加点血
+public class Profession201 : Profession
+{
+    int[] valueParam = new int[] { 50, 100, 200 };
+    float time = 3f;
+    FightManager fightManager;
+
+    public Profession201(int id):base(id)
+    {
+        fightManager = FightManager.instance;
+        EventManager.RegistEvent(EventType.FightStart, BeforeFight);
+    }
+
+    //战斗前调用
+    void BeforeFight(dynamic dy = null)
+    {
+
+        if (effectIndex != -1)
+        {
+            
+            timerId = TimeManager.Regist(AddHp, 0, time, 300);
+            EventManager.RegistEvent(EventType.FightEnd, RemoveTimer);
+        }
+
+    }
+    void AddHp(int id)
+    {
+        
+        foreach (RoleBase role in roles)
+        {
+            UnityEngine.Debug.Log("判断回血逻辑");
+            if (role.isFight)
+            {
+                UnityEngine.Debug.Log(role.name + "正在回血");
+                role.GetTreat(valueParam[effectIndex]);
+            }      
+        }
+    }
+
+    //战斗结束了，就要移出 计时器
+    int timerId;
+
+    void RemoveTimer(dynamic dy = null)
+    {
+        UnityEngine.Debug.Log("计时器移出成功");
+        TimeManager.Remove(timerId);
+        EventManager.UnRegistEvent(EventType.FightEnd, RemoveTimer);
+    }
+
+
+    public override void GetEffect(RoleBase role)
+    {
+        
+    }
+
+    public override void RemoveEffect(RoleBase role, int effectIndex)
+    {
+        
+    }
+
+
+}
+//斗战
+public class Profession202 : Profession
+{
+    int[] valueParam = new int[] { 5, 15, };
+    float[] critParam = new float[] {0.05f,0.1f}; //暴击率
+
+    public Profession202(int id) : base(id)
+    {
+
+    }
+
+    public override void GetEffect(RoleBase role)
+    {
+        if (role == null | effectIndex ==-1) return;
+        role.attackValueParam *= valueParam[effectIndex] * 1.0f / 100;
+        role.critRate += critParam[effectIndex];
+    }
+
+    public override void RemoveEffect(RoleBase role, int effectIndex)
+    {
+        if (role == null | effectIndex == -1) return;
+        role.attackValueParam /= valueParam[effectIndex] * 1.0f / 100;
+        role.critRate -= critParam[effectIndex];
+    }
+}
+
+//仙术
+public class Profession203 : Profession
+{
+    float[] valueParam = new float[] { 0.15f, 0.30f, 0.45f };
+
+    public Profession203(int id) : base(id)
+    {
+
+    }
+
+    public override void GetEffect(RoleBase role)
+    {
+        if (role == null | effectIndex == -1) return;
+        role.skillParam += valueParam[effectIndex];
+    }
+
+    public override void RemoveEffect(RoleBase role, int effectIndex)
+    {
+        if (role == null | effectIndex == -1) return;
+        role.skillParam -= valueParam[effectIndex];
+    }
+}
+
+//大智：让作用范围内的角色
+public class Profession204 : Profession
+{
+    RoleBase role;
+    int[] valueParam = new int[] { 3, 5 };
+
+    public Profession204(int id) : base(id)
+    {
+        EventManager.RegistEvent(EventType.FightStart, BeforeFight);
+    }
+
+    //战斗前调用
+    void BeforeFight(dynamic dy =null )
+    {
+        if(effectIndex!= -1)
+        {
+            timerId = TimeManager.Regist(AddMp, 0, 1, 300);
+            EventManager.RegistEvent(EventType.FightEnd, RemoveTimer);
+        }
+       
+    }
+    void AddMp(int id)
+    {
+        foreach (RoleBase role in roles)
+        {
+            if(role.isFight)
+            {
+                UnityEngine.Debug.Log(role.name + "正在回蓝");
+                role.AddMp(valueParam[effectIndex]);
+            }
+            
+        }
+    }
+
+    //战斗结束了，就要移出 计时器
+    int timerId;
+    
+    void RemoveTimer(dynamic dy = null)
+    {
+        UnityEngine.Debug.Log("计时器移出成功");
+        TimeManager.Remove(timerId);
+        EventManager.UnRegistEvent(EventType.FightEnd, RemoveTimer);
+    }
+ 
+    public override void GetEffect(RoleBase role)
+    {
+       
+    }
+
+    public override void RemoveEffect(RoleBase role, int effectIndex)
+    {
+     
+    }
+}
+
+
+//坚御
+public class Profession205 : Profession
+{
+    float[] valueParam = new float[] { 0.05f, 0.1f};
+
+    public Profession205(int id) : base(id)
+    {
+
+    }
+
+    public override void GetEffect(RoleBase role)
+    {
+        if (role == null | effectIndex == -1) return;
+        role.getHurtParam -= valueParam[effectIndex];
+    }
+
+    public override void RemoveEffect(RoleBase role, int effectIndex)
+    {
+        if (role == null | effectIndex == -1) return;
+        role.getHurtParam += valueParam[effectIndex];
+    }
+}
+
+
+//灵动
+public class Profession206 : Profession
+{
+    //提升的速度
+    int[] valueParam = new int[] { 10, 20, 30 };
+    //提升的闪避
+    float[] missParam = new float[] { 0.05f, 0.10f, 0.15f };
+
+    public Profession206(int id) : base(id)
+    {
+
+    }
+
+    public override void GetEffect(RoleBase role)
+    {
+        if (role == null | effectIndex == -1) return;
+        role.attributes[2] += valueParam[effectIndex];
+        role.missValue += missParam[effectIndex];
+    }
+
+    public override void RemoveEffect(RoleBase role, int effectIndex)
+    {
+        if (role == null | effectIndex == -1) return;
+        role.attributes[2] -= valueParam[effectIndex];
+        role.missValue -= missParam[effectIndex];
+    }
+}

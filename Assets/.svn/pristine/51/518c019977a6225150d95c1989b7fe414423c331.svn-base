@@ -1,0 +1,39 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class WndGameStart:ViewBase
+{
+    
+    public override void Init() {
+        SetVisible(true);
+    }
+
+    public override void OnFirstOpen()
+    {
+        AddUIButton("btnList/startGame", OnClickStartGame);
+        AddUIButton("btnList/exitGame", OnClickExitGame);
+    }
+
+    public override void OnShow() { }
+
+    public override void OnHide() { }
+
+    public override void OnDispose() { }
+
+    public void OnClickStartGame(GameObject go)
+    {
+        Debug.Log("开始游戏");
+        SetVisible(false);
+    }
+    void OnLoadGame()
+    {
+
+    }
+
+    void OnClickExitGame(GameObject go)
+    {
+        Application.Quit();
+    }
+
+}

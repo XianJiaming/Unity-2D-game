@@ -1,0 +1,49 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System;
+using DataClass;
+public class Main : MonoBehaviour
+{
+    public static bool isGame = false; //是否正在游戏中（如果是游戏主界面就不是游戏中）
+
+    private void Awake()
+    {
+        ViewManager.Init();
+        ClassCreater.Creat();
+        //Debug.unityLogger.logEnabled = false;
+    }
+    
+    private void Start()
+    {
+        //EventManager.RegistEvent(EventType.Update, ( object o )=>{ return; } );
+        SaveAndLoad.Init();
+        EventManager.RegistEvent(EventType.NewGameStart, (object o) => { isGame= true; });
+        EventManager.RegistEvent(EventType.GameFial, (object o) => { isGame = false; });
+        EventManager.RegistEvent(EventType.GameVectory, (object o) => { isGame = false; });
+      
+    }
+    
+
+    private void Update()
+    {
+        TimeManager.Update();
+        EventManager.ExecuteEvent(EventType.Update);
+        InputManager();
+    }
+
+    void InputManager()
+    {
+        if(Input.GetMouseButtonDown(0))
+        {
+            EventManager.ExecuteEvent(EventType.InputClick);
+        }
+    }
+
+    private void OnApplicationQuit()
+    {
+        EventManager.ExecuteEvent(EventType.ApplicationQuit);
+    }
+}
+
+

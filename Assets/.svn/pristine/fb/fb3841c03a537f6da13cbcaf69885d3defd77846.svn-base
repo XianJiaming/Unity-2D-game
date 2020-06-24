@@ -1,0 +1,171 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+class FightManager
+{
+    public const int Max_Fight_List_Number = 9;
+    public static FightManager instance = new FightManager();
+    private FightManager()
+    {
+        Init();
+
+    }
+
+    //战斗中的羁绊
+    //public Dictionary<int, Cooperation> cooperMap = new Dictionary<int, Cooperation>();
+
+    public bool isAnyoneAct = false;
+
+    public RoleBase[] playerRoles;
+
+    public RoleBase[] aiRoles;
+
+    public void Init( )
+    {
+        playerRoles = new RoleBase[Max_Fight_List_Number];
+        aiRoles = new RoleBase[Max_Fight_List_Number];
+    }
+
+    void InitFightList(RoleBase[] player, RoleBase[] ai)
+    {
+
+        for( int i = 0;i <player.Length; i++)
+        {
+            playerRoles[i] = player[i];
+            playerRoles[i]?.BeginFight();
+        }
+        for( int i = 0; i< ai.Length;i ++)
+        {
+            aiRoles[i] = ai[i];
+            aiRoles[i]?.BeginFight();
+        }
+        
+    }
+
+    public void BeginFight(RoleBase[] player, RoleBase[] ai, RectTransform[] playerP,RectTransform[] aiP,
+        GameObject[] playerGos, GameObject[] aiGos)
+    {
+        InitFightList(player, ai);
+        AddEvent();
+
+        SetGos(playerGos, aiGos);
+
+        for (int i=0;i<9;i++)
+        {
+            var role = playerRoles[i];
+            if( role != null)
+            {
+                role.SetFightPosition(playerP[i], i);
+                role.SetTeamAndEnemy(playerRoles, aiRoles);
+                role.UpdateView();
+            }
+            role = aiRoles[i];
+            if( role != null)
+            {
+                role.SetFightPosition(aiP[i], i);
+                role.SetTeamAndEnemy(aiRoles, playerRoles);
+                role.UpdateView();
+            }
+
+           
+        }
+
+    }
+    void SetGos(GameObject[] playerRoleGos, GameObject[] aiRoleGos)
+    {
+        for( int i=0; i< playerRoles.Length; i++)
+        {
+            var role = playerRoles[i];
+            if(role != null)
+            {
+                role.SetGo(playerRoleGos[i]);
+                role.UpdateView();
+                playerRoleGos[i].SetActive(true);
+            }
+            else
+            {
+                playerRoleGos[i].SetActive(false);
+            }           
+        }
+
+        for (int i = 0; i < aiRoles.Length; i++)
+        {
+            var role = aiRoles[i];
+            if (role != null)
+            {
+                role.SetGo(aiRoleGos[i]);
+                aiRoleGos[i].SetActive(true);
+            }
+            else
+            {
+                aiRoleGos[i].SetActive(false);
+            }
+        }
+
+    }
+    void EndFight()
+    {
+        RemoveEvent();
+        Debug.Log("战斗结束!");
+    }
+   
+    bool needEnd = false;
+    public void Update(object ob)
+    {
+        
+        if(needEnd)
+        {
+            EndFight();
+            return;
+        }
+        
+       
+        for (int i = 0;i< playerRoles.Length;i++)
+        {
+            if (playerRoles[i] != null)
+                playerRoles[i].Update();
+        }
+        for (int i = 0; i < aiRoles.Length; i++)
+        {
+            if (aiRoles[i] != null)
+                aiRoles[i].Update();
+        }
+    }
+
+    //角色挂了 修改数据
+    void OnRoleDie(object ob)
+    {
+        //有角色挂了，将其移出战斗队列
+        RoleBase role = ob as RoleBase;
+        Remove(role.team, role.positionIndex);
+
+        //数据修改完毕
+
+        needEnd = true;
+        for(int i=0;i<role.team.Length;i++)
+        {
+            if(role.team[i] != null)
+            {
+                needEnd = false;
+                break;
+            }
+        }
+    }
+
+    public void Remove(RoleBase[] team,int index)
+    {
+        team[index] = null;
+    }
+
+    void AddEvent()
+    {
+        EventManager.RegistEvent(EventType.Update, Update);
+        EventManager.RegistEvent(EventType.RoleDie, OnRoleDie);
+    }
+    void RemoveEvent()
+    {
+        EventManager.UnRegistEvent(EventType.Update, Update);
+        EventManager.UnRegistEvent(EventType.RoleDie, OnRoleDie);
+    }
+}

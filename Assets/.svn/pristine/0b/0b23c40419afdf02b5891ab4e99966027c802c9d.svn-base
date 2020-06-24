@@ -1,0 +1,161 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+using Random = UnityEngine.Random;
+
+public class SkillHelp
+{
+    //public delegate RoleBase[] GetSkillTarget(RoleBase[] team, RoleBase[] enemy, int param2 = 0, int targetQueue = 1);
+
+    
+
+    public static RoleBase[] GetSkillTarget(RoleBase[] team, RoleBase[] enemy, int[] targetParam, int targetQueue = 1)
+    {
+        int param1 = targetParam[0];
+        int param2 = targetParam[1];
+
+        RoleBase[] target = null;
+        switch (param1)
+        {
+            case 4:
+                target = OneTarget(team,enemy, param2, targetQueue);
+                break;
+            case 1:
+                target = AllEnemy(team, enemy, param2, targetQueue);
+                break;
+            case 0:
+                target = RandomN(team, enemy, param2, targetQueue);
+                break;
+            case 2:
+                break;
+            case 3:
+                break;            
+            default:
+                Debug.LogError("无该种选择技能目标方式-" + param1.ToString());
+                break;
+        }
+        return target;
+    }
+
+
+    public static RoleBase[] AllEnemy(RoleBase[] team, RoleBase[] enemy,int param2 = 0  ,int targetQueue = 1)
+    {
+        if(targetQueue == 1)
+        {
+            return enemy;
+        }
+        else if(targetQueue == 0)
+        {
+            return team;
+        }
+        else
+        {
+            Debug.LogError("目标队列类型不正确--" + targetQueue.ToString());
+            return null;
+        }
+    }
+    //随机选出n个目标
+    public static RoleBase[] RandomN(RoleBase[] team, RoleBase[] enemy, int param2, int targetQueue = 1)
+    {
+        List<RoleBase> targetRole = new List<RoleBase>(param2);
+
+        if (targetQueue == 1)
+        {
+            //有角色的索引
+            List<int> index = new List<int>();
+
+            for(int i=0;i<enemy.Length;i++)
+            {
+                if(enemy[i] != null)
+                {
+                    index.Add(i);
+                }
+            }            
+            
+            for (int i=0;i<param2;i++)
+            {
+                if (index.Count == 0)
+                    break;
+
+                int randomIndex =  Random.Range(0, index.Count);
+                
+                index.Remove(index[randomIndex]);
+                targetRole.Add(enemy[index[randomIndex]]);
+            }
+                     
+            return targetRole.ToArray();
+        }
+        else if (targetQueue == 0)
+        {
+            List<int> index = new List<int>();
+
+            for (int i = 0; i < team.Length; i++)
+            {
+                if (team[i] != null)
+                {
+                    index.Add(i);
+                }
+            }
+           
+            for (int i = 0; i < param2; i++)
+            {
+                if (index.Count == 0)
+                    break;
+
+                int randomIndex = Random.Range(0, index.Count);
+
+                index.Remove(index[randomIndex]);
+                targetRole.Add(team[index[randomIndex]]);
+            }
+
+            return targetRole.ToArray();
+        }
+        else
+        {
+            Debug.LogError("目标队列类型不正确--" + targetQueue.ToString());
+            return null;
+        }
+    }
+
+    //选出一排目标
+    //public RoleBase[] 
+
+
+    //直接选择当前队列的第一个目标
+    public static RoleBase[] OneTarget(RoleBase[] team, RoleBase[] enemy, int param2 = 0, int targetQueue = 1)
+    {
+        RoleBase[] target = new RoleBase[1];
+
+        if (targetQueue == 1)
+        {
+            for(int i =0;i<enemy.Length;i++)
+            {
+                if(enemy[i]!=null)
+                {
+                    target[0] = enemy[i];
+                    break;
+                }
+            }
+        }
+        else if (targetQueue == 0)
+        {
+            for (int i = 0; i < team.Length; i++)
+            {
+                if (team[i] != null)
+                {
+                    target[0] = team[i];
+                    break;
+                }
+            }
+        }
+        else
+        {
+            Debug.LogError("目标队列类型不正确--" + targetQueue.ToString());
+            return null;
+        }
+
+        return target;
+    }
+
+}
+

@@ -1,0 +1,26 @@
+﻿public enum EventType
+{
+    Update = 0,
+
+    PreRoleUpdate = 1,  //准备队列的角色增加或者减少
+
+    RoleDie = 2,
+
+    FightingRoleUpdate, //正在战斗中的角色变化（即哪个挂了
+
+    FightRoleUpdate , //战斗队列发生变化,用于战斗前
+
+    CooperDataUpdate , //羁绊数据发生变化
+
+    RefreshShop, // 刷新商店
+
+    ShopDataUpdate ,  //商店数据变化完成
+
+    LevelUp,  //人口等级提升
+
+    MoneyUpdate, //金钱发生变化时
+
+    FightEnd, // 战斗结束
+
+    InputClick,// 点击输入时
+}

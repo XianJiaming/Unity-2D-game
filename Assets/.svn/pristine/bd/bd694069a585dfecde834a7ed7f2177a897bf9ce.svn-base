@@ -1,0 +1,46 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using UnityEngine;
+
+public class ObjectPool:SingleClass<ObjectPool>
+{
+    protected override void Init()
+    {
+        base.Init();
+    }
+
+    //角色模型的对象池
+    public Dictionary<string, List<GameObject>> roleGoMap = new Dictionary<string, List<GameObject>>();
+
+    public GameObject GetRoleGo( string name)
+    {
+        GameObject go = null;
+        if(!roleGoMap.ContainsKey(name))
+        {
+            roleGoMap.Add(name, new List<GameObject>());
+        }
+        //没有东西
+        if(roleGoMap[name].Count == 0)
+        {
+            go = GameObject.Instantiate(ResourceManager.GetRole(name));
+
+        }
+        else
+        {
+            go = roleGoMap[name][0];
+            roleGoMap[name].Remove(go);
+        }
+        go.SetActive(false);
+        return go;
+
+    }
+
+    public void SaveRoleGo(string name, GameObject go )
+    {
+        go.SetActive(false);
+        roleGoMap[name].Add(go);
+    }
+}

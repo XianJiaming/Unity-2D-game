@@ -1,0 +1,21 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+
+public class OnEffectStop:MonoBehaviour
+{
+    string effectName;
+
+    public void SetName(string name)
+    {
+        effectName = name;
+    }
+
+    public void OnParticleSystemStopped()
+    {
+        Debug.Log("粒子播放结束");
+
+        ObjectPool.SaveGo(effectName, gameObject);
+    }
+}

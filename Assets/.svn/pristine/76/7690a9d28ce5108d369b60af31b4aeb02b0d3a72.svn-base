@@ -1,0 +1,119 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+using DataClass;
+public class Cooperation
+{
+    int id;
+    public string name;
+    //是否生效
+    bool isEffect ;
+    //当前战斗队列中的有该职业羁绊的角色们
+    public List<RoleBase> roles = new List<RoleBase>();
+
+    public int cooperCount; //当前羁绊角色数量（相同角色不能让数量+1）
+    public int effectIndex = 0; //羁绊生效的索引
+    public int maxCount = 0;//最大羁绊生效数量
+    GameObject viewGo;
+
+    Dictionary<int, int[]> attribute;
+
+    ConfigCooperation configData;
+
+    //构造方法里根据id赋予初始数据
+    public Cooperation(int id)
+    {
+        configData = ConfigCooperationManager.Instance().allDatas[id];
+        maxCount = configData.counts[configData.counts.Length - 1];
+
+        this.id = id;
+        name = configData.name;
+        attribute = new Dictionary<int, int[]>();
+
+        int[] attributeId = configData.attributes;
+        int[][] attributeValue = configData.values;
+        
+        for(int i=0;i<attributeId.Length;i++)
+        {
+            attribute.Add(attributeId[i], attributeValue[i]);
+        }
+
+        Init();
+    }
+    //将其初始化，可由外调用
+    public void Init( )
+    {
+        cooperCount = 0;
+        roles.Clear();
+        isEffect = false;
+    }
+
+    public void UpdateCooperCount()
+    {
+        cooperCount = 0;
+        List<int> roleIdList = new List<int>();
+        for(int i=0;i<roles.Count;i++)
+        {
+            if(!roleIdList.Contains(roles[i].GetRoleId()))
+            {
+                roleIdList.Add(roles[i].GetRoleId());
+            }
+
+        }
+        cooperCount = roleIdList.Count;
+    }
+   
+    //并且更新该羁绊的当前角色
+    public void UpdateIsEffect(RoleBase[] roles )
+    {
+        this.roles.Clear();
+        for (int i=0;i<roles.Length;i++)
+        {
+            if(roles[i].GetCooperId() == id)
+            {
+                this.roles.Add(roles[i]);
+            }
+        }
+        
+    }
+    //
+    public void UpdateIsEffect(RoleBase role, EnumType.FightListUpdateRole opType)
+    {
+        if(opType == EnumType.FightListUpdateRole.AddRole)
+        {
+            if( role.GetCooperId() == id)
+            {
+                roles.Add(role);
+            }
+        }
+        else if( opType == EnumType.FightListUpdateRole.DeleteRole)
+        {
+            if( role.GetCooperId() == id)
+            {
+                roles.Remove(role);
+            }
+        }
+    }
+    void UpdateEffectIndex()
+    {
+        effectIndex = 0;
+        for(int i=0;i< configData.counts.Length;i++)
+        {
+            if(cooperCount<configData.counts[i])
+            {
+                effectIndex = i - 1;
+            }
+            else if(cooperCount == configData.counts[i])
+            {
+                effectIndex = i;
+            }
+            else
+            {
+                effectIndex = configData.counts.Length - 1;
+            }
+        }
+
+
+    }
+}
+

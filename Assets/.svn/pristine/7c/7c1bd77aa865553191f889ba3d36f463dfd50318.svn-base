@@ -1,0 +1,301 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using UnityEngine;
+
+public class SaveAndLoad
+{
+
+    public static void Init()
+    {
+        
+        EventManager.RegistEvent(EventType.GameFial, Clear);
+        EventManager.RegistEvent(EventType.GameVectory, Clear);
+        EventManager.RegistEvent(EventType.NextLevel, SaveGame);
+        EventManager.RegistEvent(EventType.GameOver, SaveGame);
+    }
+
+    static int GetEquipId(Equip equip)
+    {
+        if (equip == null) return -1;
+        else return equip.id;
+    }
+
+    public static void SaveGame( object ob = null)
+    {
+
+        Clear();
+
+        if(!Main.isGame)
+        {
+            return;
+        }
+
+        PlayerModel playerModel = ModelManager.Get("PlayerModel") as PlayerModel;
+
+        int money = playerModel.GetMoney();
+        int hp = playerModel.GetHp();
+        int peopleLevel = playerModel.peopleLevel;
+        int gameLevel = (ModelManager.Get("GameLevelModel") as GameLevelModel).GetLevel();
+
+        StringBuilder fightSb = new StringBuilder();
+        StringBuilder preSb = new StringBuilder();
+        var fightRoles = playerModel.fightRoles;
+        var preRoles = playerModel.preRoles;
+
+
+        for(int i=0;i< fightRoles.Length;i++)
+        {
+            var role = fightRoles[i];
+            if(role!=null)
+            {
+                fightSb.Append($"{i.ToString()},{role.GetRoleId().ToString()},{role.GetLevel().ToString()}," +
+                    $"{GetEquipId(role.GetEquip(0))},{GetEquipId(role.GetEquip(1))}|");
+            }
+            
+        }
+        for (int i = 0; i < preRoles.Length; i++)
+        {
+            var role = preRoles[i];
+            if (role != null)
+            {
+                preSb.Append($"{i.ToString()},{role.GetRoleId().ToString()},{role.GetLevel().ToString()}," +
+                    $"{GetEquipId(role.GetEquip(0))},{GetEquipId(role.GetEquip(1))}|");
+            }
+
+        }
+       
+            
+
+        PlayerPrefs.SetInt("money", money);
+        PlayerPrefs.SetInt("hp", hp);
+        PlayerPrefs.SetInt("gameLevel", gameLevel);
+        PlayerPrefs.SetInt("peopleLevel", peopleLevel);
+
+        if (fightSb.Length > 0)
+        {
+            fightSb.Remove(fightSb.Length - 1, 1);
+            PlayerPrefs.SetString("fightRoles", fightSb.ToString());
+        }
+            
+        if (preSb.Length > 0)
+        {
+            preSb.Remove(preSb.Length - 1, 1);
+            PlayerPrefs.SetString("preRoles", preSb.ToString());
+        }
+
+        //装备背包
+
+        var equipModel = ModelManager.Get<EquipModel>("EquipModel");
+        if(!equipModel.IsEmpty)
+        {
+            StringBuilder equipSb = new StringBuilder();
+
+            for (int i = 0; i < 18; i++)
+            {
+                var equip = equipModel.GetEquip(i);
+                if (equip != null)
+                {
+                    equipSb.Append($"{equip.id.ToString()},");
+                }
+            }
+            equipSb.Remove(equipSb.Length - 1, 1);
+
+            PlayerPrefs.SetString("equips", equipSb.ToString());
+        }
+
+        //天赋
+        StringBuilder tSb = new StringBuilder("");
+
+        foreach(var t in playerModel.talents)
+        {
+            tSb.Append($"{t.id},");
+        }
+
+        if(!tSb.ToString().Equals(""))
+        {
+            tSb.Remove(tSb.Length - 1, 1);
+
+            PlayerPrefs.SetString("talents", tSb.ToString());
+        }
+
+        //商店
+        StringBuilder shopSb = new StringBuilder();
+        RoleShopModel shopModel = ModelManager.Get<RoleShopModel>("RoleShopModel");
+        foreach(int i in shopModel.roles)
+        {
+            shopSb.Append($"{i.ToString()},");
+        }
+        shopSb.Remove(shopSb.Length - 1, 1);
+        PlayerPrefs.SetString("shopRoles", shopSb.ToString());
+
+    }
+
+
+    public static void Clear( object o = null )
+    {
+        PlayerPrefs.DeleteAll();
+    }
+
+
+    public static void Load( )
+    {
+        PlayerModel playerModel = ModelManager.Get("PlayerModel") as PlayerModel;
+        RoleShopModel shopModel = ModelManager.Get<RoleShopModel>("RoleShopModel");
+
+        playerModel.talents = new List<MyTalent.Talent>();
+        playerModel.fightRoles = new RoleBase[9];
+        playerModel.preRoles = new RoleBase[PlayerModel.Max_Pre_Role_Count];
+        playerModel.playerData = new PlayerData(0);
+
+        if (PlayerPrefs.HasKey("shopRoles"))
+        {
+            string[] roleStrings = PlayerPrefs.GetString("shopRoles").Split(',');
+
+            for(int i=0;i<roleStrings.Length;i++)
+            {
+                shopModel.roles[i] = int.Parse(roleStrings[i]);
+            }
+
+            
+        }
+
+        
+        if ( PlayerPrefs.HasKey("money"))
+        {
+            playerModel.SetMoney(PlayerPrefs.GetInt("money") - playerModel.GetMoney());
+        }
+//         else
+//         {
+//             playerModel.SetMoney(100 - playerModel.GetMoney());
+//         }
+
+        if( PlayerPrefs.HasKey("gameLevel"))
+        {
+            (ModelManager.Get("GameLevelModel") as GameLevelModel).SetLevel(PlayerPrefs.GetInt("gameLevel"));
+            Debug.Log("关卡等级"+PlayerPrefs.GetInt("gameLevel"));
+        }
+//         else
+//         {
+//             (ModelManager.Get("GameLevelModel") as GameLevelModel).SetLevel(0);
+//         }
+
+        if (PlayerPrefs.HasKey("peopleLevel"))
+        {
+            playerModel.peopleLevel = PlayerPrefs.GetInt("peopleLevel");
+
+        }
+//         else
+//         {
+//             playerModel.peopleLevel = 2;
+//         }
+
+
+
+
+        if ( PlayerPrefs.HasKey("hp"))
+        {
+            playerModel.SetHp(PlayerPrefs.GetInt("hp") - playerModel.GetHp());
+
+        }
+        else
+        {
+            playerModel.SetHp(30 - playerModel.GetHp());
+        }
+
+        if(PlayerPrefs.HasKey("fightRoles"))
+        {
+            
+            string rolesString = PlayerPrefs.GetString("fightRoles");
+            string[] roles = rolesString.Split('|');
+
+            for( int i=0;i<roles.Length;i++)
+            {
+                
+                string[] roleString = roles[i].Split(',');
+
+                int index = int.Parse(roleString[0]);
+
+                int roleId = int.Parse(roleString[1]);
+
+                int level = int.Parse(roleString[2]);
+
+                int equipId1 = int.Parse(roleString[3]);
+
+                int equipId2 = int.Parse(roleString[4]);
+
+                RoleBase role = new RoleBase();
+                role.SetId(roleId, level);
+                if(equipId1!= -1)
+                    role.AddEquip(new Equip(equipId1));
+                if (equipId2 != -1)
+                    role.AddEquip(new Equip(equipId2));
+
+                playerModel.AddFightRole(role, index);
+            }
+        }
+
+        if (PlayerPrefs.HasKey("preRoles"))
+        {
+            string rolesString = PlayerPrefs.GetString("preRoles");
+            string[] roles = rolesString.Split('|');
+
+            for (int i = 0; i < roles.Length; i++)
+            {
+
+                string[] roleString = roles[i].Split(',');
+
+                int index = int.Parse(roleString[0]);
+
+                int roleId = int.Parse(roleString[1]);
+
+                int level = int.Parse(roleString[2]);
+
+                int equipId1 = int.Parse(roleString[3]);
+
+                int equipId2 = int.Parse(roleString[4]);
+
+                RoleBase role = new RoleBase();
+                role.SetId(roleId, level);
+                if (equipId1 != -1)
+                    role.AddEquip(new Equip(equipId1));
+                if (equipId2 != -1)
+                    role.AddEquip(new Equip(equipId2));
+
+                playerModel.SetPreRole(role,index);
+            }
+        }
+
+        if(PlayerPrefs.HasKey("equips"))
+        {
+            var equipModel = ModelManager.Get<EquipModel>("EquipModel");
+
+            string equipsString = PlayerPrefs.GetString("equips");
+
+            string[] equips = equipsString.Split(',');
+            foreach(string equipString in equips)
+            {
+                int id = int.Parse(equipString);
+                equipModel.AddEquip(id);
+            }
+        }
+
+        if(PlayerPrefs.HasKey("talents"))
+        {
+            string tStrings = PlayerPrefs.GetString("talents");
+            string[] talents = tStrings.Split(',');
+
+            foreach(string s in talents)
+            {
+                int id = int.Parse(s);
+                playerModel.AddTalent(id);
+            }
+
+
+        }
+    }
+
+
+   
+}
+

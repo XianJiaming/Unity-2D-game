@@ -1,0 +1,49 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class UIUtil
+{
+
+    public static GameObject GetGameObject(GameObject go , string path)
+    {
+        Transform t =  go.transform.Find(path);
+        if( t==null)
+        {
+            Debug.LogError("该路径下不存在该物体:" + path);
+            return null;
+        }
+        else
+        {
+            return t.gameObject;
+        }
+
+    }
+    public static RectTransform GetRectTransform(GameObject go, string path)
+    {
+        var goo = GetGameObject(go, path);
+        return goo?.GetComponent<RectTransform>();
+    }
+    public static Image GetImage(GameObject go, string path)
+    {
+        var goo = GetGameObject(go, path);
+        return goo?.GetComponent<Image>();
+    }
+    public static Text GetText(GameObject go, string path)
+    {
+        var goo = GetGameObject(go, path);
+        return goo?.GetComponent<Text>();
+    }
+    public static Transform GetTransform(GameObject go, string path)
+    {
+        return GetGameObject(go, path)?.transform;
+
+    }
+
+    public static void SetUIOnClick( GameObject go, Action<GameObject> callBack )
+    {
+        var uiL = UIListener.GetUIListener(go);
+        uiL.AddClick(callBack);
+    }
+}

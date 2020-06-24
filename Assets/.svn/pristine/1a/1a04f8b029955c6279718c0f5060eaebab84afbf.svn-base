@@ -1,0 +1,71 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+class FightManager
+{
+    public static bool isAnyoneAct = false;
+
+
+    public RoleBase[] myRoles;
+
+    public RoleBase[] yourRoles;
+
+    public void Init( )
+    {
+        myRoles = new RoleBase[9];
+        yourRoles = new RoleBase[9];
+        EventManager.RegistEvent(EventType.Update, Update);
+    }
+
+    public void BeginFight()
+    {
+
+    }
+    void EndFight()
+    {
+        Debug.Log("战斗结束!");
+    }
+    public void Update(object ob)
+    {
+        if(NeedEnd())
+        {
+            EndFight();
+            return;
+        }
+
+        for (int i = 0;i< myRoles.Length;i++)
+        {
+            if (myRoles[i] != null)
+                myRoles[i].Update();
+        }
+        for (int i = 0; i < yourRoles.Length; i++)
+        {
+            if (yourRoles[i] != null)
+                yourRoles[i].Update();
+        }
+    }
+
+    bool NeedEnd()
+    {
+        bool canEnd = true;
+        for (int i = 0; i < myRoles.Length; i++)
+        {
+            if (myRoles[i] != null)
+            {
+                canEnd = false;
+                break;
+            }
+        }
+        for (int i = 0; i < yourRoles.Length; i++)
+        {
+            if (yourRoles[i] != null)
+            {
+                canEnd = false;
+                break;
+            }
+        }
+        return canEnd;
+    }
+
+}

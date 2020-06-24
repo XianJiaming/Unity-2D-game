@@ -1,0 +1,76 @@
+﻿using UnityEngine.UI;
+
+//战斗结束的时候， 根据玩家胜利和失败，做不同现实
+class WndFightOver : ViewBase
+{
+
+    Text descText;
+
+    public override void Init()
+    {
+        base.Init();
+
+
+        EventManager.RegistEvent(EventType.GameOver, ShowGameOverView);
+        EventManager.RegistEvent(EventType.FightFail, ShowFightFailView);
+        EventManager.RegistEvent(EventType.FightVectory, ShowFightVectoryView);
+        EventManager.RegistEvent(EventType.GameVectory, ShowGameVectoryView);
+
+    }
+
+    public override void OnFirstOpen()
+    {
+        base.OnFirstOpen();
+
+        descText = GetText("desc");
+
+        AddUIButton("sureBtn", OnClickSureBtn);
+    }
+
+    public override void OnShow()
+    {
+        base.OnShow();
+    }
+
+    public override void OnHide()
+    {
+        base.OnHide();
+    }
+
+    public override void OnDispose()
+    {
+        base.OnDispose();
+    }
+
+    void OnGameOver(object ob =null )
+    {
+        SetVisible(true);
+    }
+    void OnClickSureBtn(UnityEngine.GameObject ob)
+    {
+        SetVisible(false);
+       
+    }
+
+    void ShowFightVectoryView(object ob = null )
+    {
+        SetVisible(true);
+        descText.text = "战斗胜利！";
+    }
+    void ShowFightFailView(object ob = null)
+    {
+        SetVisible(true);
+        descText.text = "战斗失败！";
+    }
+    void ShowGameVectoryView(object ob = null)
+    {
+        SetVisible(true);
+        descText.text = "哥哥你太强啦！打通了所有关卡！";
+    }
+    void ShowGameOverView(object ob = null )
+    {
+        SetVisible(true);
+        descText.text = "弟弟你太菜啦！这么快就倒下了！";
+    }
+
+}

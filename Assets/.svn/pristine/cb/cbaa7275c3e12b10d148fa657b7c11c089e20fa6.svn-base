@@ -1,0 +1,42 @@
+using System.Collections.Generic;
+using System;
+namespace DataClass
+{
+
+    public class ConfigTalentManager : ConfigDataManager<ConfigTalentManager,ConfigTalent>
+
+    {
+    
+    public override void Init( )
+    {
+    name = "ConfigTalent";
+    ConfigTalent config = null;
+    
+    config = new ConfigTalent();
+    config.id = 10;
+    config.name = "钱";
+    config.desc = "每场战斗结束后获得额外5金币";
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigTalent();
+    config.id = 11;
+    config.name = "技";
+    config.desc = "每场战斗开始时我方随机1名角色释放技能";
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigTalent();
+    config.id = 12;
+    config.name = "英雄";
+    config.desc = "随机获得两个5费单位";
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigTalent();
+    config.id = 13;
+    config.name = "无敌";
+    config.desc = "每次战斗开始时我方所有角色无敌3秒";
+    allDatas.Add( config.id, config)
+;
+    base.Init();
+    }
+}
+}

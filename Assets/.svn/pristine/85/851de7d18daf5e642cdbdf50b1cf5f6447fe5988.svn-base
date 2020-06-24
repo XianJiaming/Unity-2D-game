@@ -1,0 +1,222 @@
+﻿using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayerModel
+{
+
+    private static PlayerModel instance = new PlayerModel();
+    public static PlayerModel Instance()
+    {
+        return instance;
+    }
+    private PlayerModel()
+    {
+        Init();
+    }
+    //战斗队列的角色，用来上场的，但是上场中不应该修改这个
+    public  RoleBase[] fightRoles;
+
+    //我此时拥有的未放入战斗队列的角色
+    public RoleBase[] preRoles;
+
+    //当前战斗队列中的羁绊
+    public Dictionary<int, Cooperation> cooperMap = new Dictionary<int, Cooperation>();
+
+    //当前等级,与最大上阵人数一致
+    public int level ;
+
+    public const int  Max_Pre_Role_Count = 6;
+
+    void Init()
+    {
+        level = 2;
+
+        fightRoles = new RoleBase[9];
+
+        fightRoles[0] = new RoleBase();
+        fightRoles[0].Init(11);
+
+        fightRoles[1] = new RoleBase();
+        fightRoles[1].Init(12);
+
+        preRoles = new RoleBase[Max_Pre_Role_Count];
+        UpdateCooperData(null);
+
+        EventManager.RegistEvent(EventType.FightRoleUpdate, UpdateCooperData);
+    }
+    public int GetPreRoleCount()
+    {
+        int count = 0;
+        for(int i=0;i< preRoles.Length;i++)
+        {
+            if (preRoles[i] != null)
+                count++;
+        }
+
+        return count;
+    }
+
+    public int GetFightRoleCount( )
+    {
+        int count = 0;
+        for(int i=0;i<fightRoles.Length;i++)
+        {
+            if( fightRoles[i] != null )
+            {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /// <summary>
+    /// 交换2个队列中的角色数据
+    /// </summary>
+    /// <param name="role">具体角色</param>
+    /// <param name="fightIndex">即将落户的战斗队列索引</param>
+    /// <param name="preIndex">准备队列索引</param>
+    public bool ExChangeRolesBetPreAndFight( int fightIndex, int preIndex)
+    {
+        RoleBase tempRole = fightRoles[fightIndex];
+        if( tempRole == null)
+        {
+            int count = GetFightRoleCount();
+            if( count >= level )
+            {
+                Debug.Log("人数已经达最大数量，不可再上阵角色");
+                return false;
+            }
+        }
+
+        fightRoles[fightIndex] = preRoles[preIndex];
+
+        preRoles[preIndex] = tempRole;
+
+        EventManager.ExecuteEvent(EventType.FightRoleUpdate, fightIndex);
+        EventManager.ExecuteEvent(EventType.PreRoleUpdate, preIndex);
+
+        return true;
+    }
+    //交换战斗队列中的角色数据
+    public void ExChangeRolesBetFight( int newIndex, int orIndex)
+    {
+        RoleBase tempRole = fightRoles[newIndex];
+
+        fightRoles[newIndex] = fightRoles[orIndex];
+
+        fightRoles[orIndex] = tempRole;
+
+        EventManager.ExecuteEvent(EventType.FightRoleUpdate, newIndex);
+        EventManager.ExecuteEvent(EventType.FightRoleUpdate, orIndex);
+    }
+    //交换准备队列中的角色数据
+    public void ExChangeRolesBetPre( int newIndex, int orIndex)
+    {
+        RoleBase tempRole = preRoles[newIndex];
+
+        preRoles[newIndex] = preRoles[orIndex];
+
+        preRoles[orIndex] = tempRole;
+
+        EventManager.ExecuteEvent(EventType.PreRoleUpdate, newIndex);
+        EventManager.ExecuteEvent(EventType.PreRoleUpdate, orIndex);
+    }
+
+    //升级了
+    public void UpdateLevel( int value = 1 )
+    {
+        level += value;
+
+        EventManager.ExecuteEvent(EventType.LevelUp);
+    }
+
+    //战斗前
+    //战斗队列变化时 调用次方法，更新羁绊列表，更新每个羁绊的当前角色数量（重复不算）
+    //
+    public void UpdateCooperData(object ob)
+    {
+        cooperMap.Clear();
+        for (int i=0;i< fightRoles.Length;i++)
+        {
+            RoleBase role = fightRoles[i];
+            if (role != null)
+            {
+                int cooperId = role.GetCooperId();
+                if (cooperMap.ContainsKey(cooperId))
+                {
+                   
+                }
+                else
+                {
+                    cooperMap.Add(cooperId, new Cooperation(cooperId));
+                    
+                }
+                cooperMap[cooperId].roles.Add(role);
+            }
+
+        }
+        foreach(var v in cooperMap.Values)
+        {
+            v.UpdateCooperCount();
+            //v.UpdateIsEffect();
+        }
+
+        EventManager.ExecuteEvent(EventType.CooperDataUpdate);
+    }
+
+    
+    /// <summary>
+    /// 准备队列增加角色，一般用于购买等获得新角色
+    /// </summary>
+    /// <param name="role">角色</param>
+    /// <param name="idx">角色即将所在准备队列中的索引</param>
+    /// <param name="orIdx">角色在战斗队列中的索引</param>
+    public void AddRolePre( RoleBase role)
+    {       
+            int count = 0;
+            for (int i = 0; i < preRoles.Length; i++)
+            {
+                if (preRoles[i] != null)
+                    count++;
+            }
+            if (count < Max_Pre_Role_Count)
+            {
+                //找个空位置给他
+                for (int i = 0; i < preRoles.Length; i++)
+                {
+                    if (preRoles[i] == null)
+                    {
+                        preRoles[i] = role;
+                        EventManager.ExecuteEvent(EventType.PreRoleUpdate, i);
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                Debug.Log("玩家准备区域拥有的角色达到最大数量");
+            }                    
+    }
+
+    //玩家获得新角色,准备队列中增加新角色, 购买时 以id传参
+    public void AddRolePre( int roleId)
+    {
+        RoleBase role = new RoleBase();
+        role.SetId(roleId);
+
+        AddRolePre(role);
+    }
+    //准备队列中移出角色
+    public void RemoveRolePre(int index ,int roleId)
+    {
+        if(preRoles[index].GetRoleId() != roleId)
+        {
+            Debug.Log("移除的角色索引与id不一致");
+        }
+        else
+        {
+            preRoles[index] = null;
+            EventManager.ExecuteEvent(EventType.PreRoleUpdate, index);
+        }      
+    }
+}

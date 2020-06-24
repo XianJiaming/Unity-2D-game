@@ -1,0 +1,345 @@
+﻿using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayerModel
+{
+    private static PlayerModel instance = new PlayerModel();
+    public static PlayerModel Instance()
+    {
+        return instance;
+    }
+    private PlayerModel()
+    {
+        
+    }
+    //战斗队列的角色，用来上场的，但是上场中不应该修改这个
+    public  RoleBase[] fightRoles;
+
+    //我此时拥有的未放入战斗队列的角色
+    public RoleBase[] preRoles;
+
+    
+
+    //当前等级,与最大上阵人数一致
+    public int level ;
+
+    public const int  Max_Pre_Role_Count = 6;
+
+    private int money; //钱
+
+
+    public void Init()
+    {
+        level = 2;
+
+        money = 100;
+
+        fightRoles = new RoleBase[9];
+
+        fightRoles[0] = new RoleBase();
+        fightRoles[0].SetId(11);
+
+        fightRoles[1] = new RoleBase();
+        fightRoles[1].SetId(12);
+
+        preRoles = new RoleBase[Max_Pre_Role_Count];
+
+    }
+    public int GetPreRoleCount()
+    {
+        int count = 0;
+        for(int i=0;i< preRoles.Length;i++)
+        {
+            if (preRoles[i] != null)
+                count++;
+        }
+
+        return count;
+    }
+
+    public int GetFightRoleCount( )
+    {
+        int count = 0;
+        for(int i=0;i<fightRoles.Length;i++)
+        {
+            if( fightRoles[i] != null )
+            {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public int GetMoney( )
+    {
+        return money;
+    }
+    /// <summary>
+    /// 传入money的变化值
+    /// </summary>
+    /// <param name="value"></param>
+    public void SetMoney(int value)
+    {
+        money += value;
+        EventManager.ExecuteEvent(EventType.MoneyUpdate);
+    }
+    //减少钱
+    public bool ReduceMoney(int value)
+    {
+        if(money - value<0)
+        {
+            Debug.Log("钱不够,你消耗不起");
+            return false;
+        }
+        else
+        {
+            SetMoney(-value);
+            return true;
+        }
+    }
+
+
+    /// <summary>
+    /// 交换2个队列中的角色数据
+    /// </summary>
+    /// <param name="role">具体角色</param>
+    /// <param name="fightIndex">即将落户的战斗队列索引</param>
+    /// <param name="preIndex">准备队列索引</param>
+    public bool ExChangeRolesBetPreAndFight( int fightIndex, int preIndex)
+    {
+        RoleBase fightRole = fightRoles[fightIndex];
+        if( fightRole == null)
+        {
+            int count = GetFightRoleCount();
+            if( count >= level )
+            {
+                Debug.Log("人数已经达最大数量，不可再上阵角色");
+                return false;
+            }
+        }
+        RoleBase preRole = preRoles[preIndex];
+        
+        RemoveFightRole(fightIndex, EnumType.RoleUpdateType.FightToPre); //减少属性并更新羁绊
+        SetPreRole(fightRole, preIndex);//pre 来自fight
+        if(preRole!=null)
+        AddFightRole(preRole, fightIndex);//判断该角色是否需要获取羁绊属性，更新羁绊
+      
+        return true;
+    }
+    //交换战斗队列中的角色数据
+    public void ExChangeRolesBetFight( int newIndex, int orIndex)
+    {
+        RoleBase tempRole = fightRoles[newIndex];
+
+        SetFightRole(fightRoles[orIndex], newIndex, EnumType.RoleUpdateType.Fight);
+        SetFightRole(tempRole, orIndex, EnumType.RoleUpdateType.Fight);      
+
+    }
+    //交换准备队列中的角色数据
+    public void ExChangeRolesBetPre( int newIndex, int orIndex)
+    {
+        RoleBase tempRole = preRoles[newIndex];
+        SetPreRole(preRoles[orIndex], newIndex);
+        SetPreRole(tempRole, orIndex);      
+    }
+
+    //人口升级了
+    public void UpdateLevel( int value = 1 )
+    {
+        level += value;
+
+        EventManager.ExecuteEvent(EventType.LevelUp);
+    }
+
+    //-----------------------------------------------------------------------------------羁绊
+  
+    //-----------------------------------------------------------------------------------羁绊
+
+    /// <summary>
+    /// 准备队列增加角色,（交换战斗队列与准备队列的角色时不走该接口
+    /// </summary>
+    /// <param name="role">角色</param>
+    /// <param name="idx">角色即将所在准备队列中的索引</param>
+    /// <param name="orIdx">角色在战斗队列中的索引</param>
+    public void AddRolePre( RoleBase role)
+    {       
+            int count = 0;
+            for (int i = 0; i < preRoles.Length; i++)
+            {
+                if (preRoles[i] != null)
+                    count++;
+            }
+            if (count < Max_Pre_Role_Count)
+            {
+                //找个空位置给他
+                for (int i = 0; i < preRoles.Length; i++)
+                {
+                    if (preRoles[i] == null)
+                    {
+                        preRoles[i] = role;
+                       
+                        EventManager.ExecuteEvent(EventType.PreRoleUpdate, i);
+
+                        CanRoleUpLevel(role.GetRoleId(), role.GetLevel());
+
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                Debug.Log("玩家准备区域拥有的角色达到最大数量");
+            }                    
+    }
+
+    //判断该角色是否可以升级,穿入该角色的id与等级,角色升级是直接生成一个新角色，还不是在原角色基础上修改
+    void CanRoleUpLevel(int roleId, int level)
+    {
+        //找到可以升级的3个角色
+        List<int> preRs = new List<int>(3);
+        List<int> fightRs = new List<int>(3);
+
+        for(int i = 0;i< preRoles.Length;i++)
+        {
+            var role = preRoles[i];
+            if (role == null)
+                continue;
+
+            if(role.GetRoleId() == roleId && role.GetLevel() == level)
+            {
+                preRs.Add(i);
+            }
+        }
+        for(int i=0;i< fightRoles.Length;i++)
+        {
+            var role = fightRoles[i];
+            if (role == null)
+                continue;
+
+            if (role.GetRoleId() == roleId && role.GetLevel() == level)
+            {
+                fightRs.Add(i);
+            }
+        }
+        //移出角色
+        if(preRs.Count + fightRs.Count == 3)
+        {
+            for(int i = 0;i<preRs.Count;i++)
+            {
+                RemoveRolePre(preRs[i], preRoles[ preRs[i] ].GetRoleId());
+            }
+            for(int i=0;i<fightRs.Count;i++)
+            {
+                RemoveFightRole(fightRs[i], EnumType.RoleUpdateType.RemoveFight);
+            }
+        }
+        else
+        {
+            return;
+        }
+        //获得升级后的角色，放到战斗队列中找到的第一个该角色
+        //此处新生成的角色是因升级而成，所以因该派发 升级 事件,进行升级的特殊响应
+        int index;
+       
+        if( fightRs.Count>0)
+        {
+            index = fightRs[0];
+            RoleBase role = RoleFactory.CreateRole( roleId , level + 1);
+            
+            AddFightRole(role, index);
+        }
+        else
+        {
+           
+            AddRolePre(roleId, level + 1);
+        }
+
+    }
+    //指定位置上覆盖一个新角色，原来该位置要保证为空
+    public void AddFightRole( RoleBase role, int index)
+    {
+        if( fightRoles[index] != null)
+        {
+            Debug.LogError($"索引为{index}的位置上角色不为空，不能直接赋值新角色");
+            return;
+        }
+        
+        SetFightRole(role, index, EnumType.RoleUpdateType.AddFight);
+
+        CanRoleUpLevel(role.GetRoleId(), role.GetLevel());
+    }
+    void SetPreRole( RoleBase role , int setIndex )
+    {
+        preRoles[setIndex] = role;
+        EventManager.ExecuteEvent(EventType.PreRoleUpdate, setIndex);
+    }
+
+    void SetFightRole( RoleBase role, int setIndex, EnumType.RoleUpdateType type)
+    {
+        fightRoles[setIndex] = role;
+        EventManager.ExecuteEvent(EventType.FightRoleUpdate, new UpdateRoleData(setIndex, type, role));
+    }
+  
+    //玩家获得新角色,准备队列中增加新角色, 购买时 以id传参
+    public void AddRolePre( int roleId, int level = 1)
+    {
+        RoleBase role = RoleFactory.CreateRole(roleId, level);      
+        AddRolePre(role);
+    }
+    //准备队列中移出角色
+    public void RemoveRolePre(int index ,int roleId = 0)
+    {
+        if(roleId != 0)
+            if(preRoles[index].GetRoleId() != roleId)
+            {
+                Debug.Log("移除的角色索引与id不一致");
+            }
+       
+        preRoles[index] = null;
+        EventManager.ExecuteEvent(EventType.PreRoleUpdate,index);
+            
+    }
+    //移出角色,分两种，第一种需要移出的改属性，第二种不需要
+    public void RemoveFightRole( int removeIndex, EnumType.RoleUpdateType type)
+    {   
+
+        RoleBase role = fightRoles[removeIndex];
+        fightRoles[removeIndex] = null;
+        EventManager.ExecuteEvent(EventType.FightRoleUpdate, new UpdateRoleData(removeIndex, type, role));
+           
+    }
+
+    public void SellRole(int index,EnumType.RoleListType listType)
+    {
+        int price = 0;
+        if(listType == EnumType.RoleListType.Fight)
+        {
+            price = fightRoles[index].GetPrice();
+            RemoveFightRole(index, EnumType.RoleUpdateType.RemoveFight);
+        }
+        else if( listType == EnumType.RoleListType.Pre)
+        {
+            price = preRoles[index].GetPrice();
+            RemoveRolePre(index);
+        }
+
+        SetMoney( price);
+    }
+
+}
+
+public struct UpdateRoleData
+{
+    public int index;
+    public EnumType.RoleUpdateType type;
+    public RoleBase role;
+    public UpdateRoleData(int index, EnumType.RoleUpdateType type, RoleBase role = null)
+    {
+        this.index = index;
+        this.type = type;
+        this.role = role;
+    }
+
+}
+
+

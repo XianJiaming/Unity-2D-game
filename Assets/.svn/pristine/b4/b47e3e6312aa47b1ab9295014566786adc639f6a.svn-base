@@ -1,0 +1,41 @@
+﻿using System;
+using System.Collections.Generic;
+using DataClass;
+
+ public  class Equip
+{
+    int id;
+    string name;
+    int equipType;
+    int level;
+    Dictionary<int, int> attributes = new Dictionary<int, int>();
+
+
+    //更新初始数据
+    public void Init(int id)
+    {
+        this.id = id;
+        var datas = ConfigEquipManager.Instance().allDatas[id];
+        name = datas.name;
+        equipType = datas.equipType;
+        level = datas.level;
+        
+        foreach(var v in datas.attributes)
+        {
+            attributes.Add(v.Key, v.Value);
+        }
+    }
+
+    //穿戴装备
+    public void Load(RoleBase role)
+    {
+
+    }
+    //卸载装备
+    public void UnLoad(RoleBase role)
+    {
+
+    }
+}   
+ 
+

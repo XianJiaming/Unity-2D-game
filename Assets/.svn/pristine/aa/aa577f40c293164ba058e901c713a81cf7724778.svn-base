@@ -1,0 +1,196 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using DataClass;
+using UnityEngine;
+
+public class SkillBase
+{
+    int level; //技能等级 与角色等级同步
+    int id;
+    List<MyFightEffect.IFightEffect> effects = new List<MyFightEffect.IFightEffect>();
+    public string name
+    {
+        get;
+        private set;
+    }
+    int[] targetParam;
+    int targetQueue;
+
+    RoleBase owner;
+
+
+    public void SetId( int id, int level, RoleBase owner )
+    {
+        Dictionary<int, int[]>[] values = new Dictionary<int, int[]>[3];
+        this.owner = owner;
+        var datas = ConfigSkillManager.Instance().allDatas[id];
+        this.id = id;
+        name = datas.name;
+        targetParam = datas.targetType;
+        this.level = level;
+        targetQueue = datas.targetQueue;
+        values[0] = datas.level1;
+        values[1] = datas.level2;
+        values[2] = datas.level3;
+
+        if(level == 1)
+        {
+            foreach(var v in datas.level1)
+            {
+                var effect = MyFightEffect.EffectFactory.CreatInstance(v.Key);
+                effect.Init(v.Value[0], v.Value[1]);
+                effects.Add(effect);
+            }
+        }
+        else if(level == 2)
+        {
+            foreach (var v in datas.level2)
+            {
+                var effect = MyFightEffect.EffectFactory.CreatInstance(v.Key);
+                effect.Init(v.Value[0], v.Value[1]);
+                effects.Add(effect);
+            }
+        }
+        else if(level == 3)
+        {
+            foreach (var v in datas.level3)
+            {
+                var effect = MyFightEffect.EffectFactory.CreatInstance(v.Key);
+                effect.Init(v.Value[0], v.Value[1]);
+                effects.Add(effect);
+            }
+        }
+        else
+        {
+            Debug.LogError("技能等级配置错误");
+        }
+
+        for(int i =0;i<values.Length;i++)
+        {
+
+        }
+
+        InitDesc();
+
+
+    }
+    //数据变动
+    void UseData(RoleBase[] team, RoleBase[] enemy)
+    {
+        RoleBase[] target = SkillHelp.GetSkillTarget(team, enemy, targetParam, targetQueue);
+        //
+        for (int i = 0; i < target.Length; i++)
+        {
+            var role = target[i];
+            if (role != null)
+            {
+                for (int j = 0; j < effects.Count; j++)
+                {
+                    effects[j].Effect(role);
+                }
+            }
+        }
+    }
+    //自身go
+    void UseSelfGo( )
+    {
+
+    }
+    //自身特效
+    void UseSelfEffect()
+    {
+
+    }
+    //全屏特效
+    void UseWholeEffect( )
+    {
+
+    }
+    //敌方特效
+    void UseEnemyEffect( )
+    {
+
+    }
+    //敌方go
+    void UseEnemyGo()
+    {
+
+    }
+    public void Use(RoleBase[] team, RoleBase[] enemy)
+    {
+        //播放特效
+        //·全屏特效
+        //·自身特效
+        //·目标特效
+
+        //时序流程：  影响自身go - 播放自身特效 - 全屏特效 - 数据变动  -敌方特效 - 敌方go
+
+        //影响自身gameobject
+        //·移动？
+
+        //影响对面gameobject
+        //·颤抖？
+
+        //影响数据
+
+        //go 与 effect 一起变化
+
+        //go变化  1.移动到目标 2. 变大1.5倍 
+
+        //自身 effect: 在自身处出现特效
+
+        //全屏：让生成的特效尽量 分布在全屏
+
+        //敌方： 颤抖，出现受击特效
+
+        UseSelfGo();
+        UseSelfEffect();
+
+        UseWholeEffect();
+
+        UseData(team, enemy);
+
+        UseEnemyEffect();
+        UseEnemyGo();
+
+        
+
+
+       
+        EndUse();
+    }
+
+    void EndUse()
+    {
+        FightManager.instance.isAnyoneAct = false;
+    }
+
+    string desc;
+    public string GetDesc()
+    {
+        return desc;
+    }
+
+    void InitDesc()
+    {
+        desc = $"\n技能:{name}";
+    }
+
+    //技能等级变化时要 去更新 value， 创建角色时同时创建更新技能等级
+    //该方法暂时无用，因为角色不会升级，只会被创建新角色
+    //     void SetLevel(int value)
+    //     {
+    //         level = value;
+    //         var datas = ConfigSkillManager.Instance().allDatas[id];
+    //         foreach(var v in idValue)
+    //         {
+    //            idValue[v.Key] = datas.idValue[v.Key][level - 1];
+    //         }
+    //    }
+    //使用技能
+
+
+} 
+   
+

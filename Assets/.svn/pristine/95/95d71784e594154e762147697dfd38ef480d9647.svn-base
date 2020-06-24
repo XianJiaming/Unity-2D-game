@@ -1,0 +1,124 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+class WndCooper:ViewBase
+{
+    //------------------------------------------
+    class CooperItem
+    {
+        
+        Cooperation info;
+        GameObject go;
+        Image iconImage;
+        Text nameText;
+        Text numberText;
+        public CooperItem(GameObject go)
+        {
+            this.go = go;
+            iconImage = UIUtil.GetImage(go, "icon");
+            nameText = UIUtil.GetText(go, "name");
+            numberText = UIUtil.GetText(go, "number");
+            UIUtil.SetUIOnClick(go, OnClick);
+            
+        }
+
+        void OnClick(GameObject go)
+        {
+            //点击后显示 该羁绊的描述信息
+        }
+
+        public void SetInfo(Cooperation info)
+        {
+            this.info = info;
+            UpdateView();
+        }
+        public void UpdateView()
+        {
+            nameText.text = info.name;
+            numberText.text = $"{info.cooperCount}/{info.maxCount}";
+
+        }
+        public void SetVisible(bool value)
+        {
+            
+            go.SetActive(value);
+        }
+
+    }
+    //------------------------------------------
+
+
+    Transform cooperListTrs;
+    GameObject cooperViewItem;
+    List<CooperItem> cooperItems = new List<CooperItem>();
+    PlayerModel playerModel;
+
+    public override void Init()
+    {
+        base.Init();
+        playerModel = PlayerModel.Instance();
+        layer = GameLayer.UI;
+    }
+   
+
+    public override void OnFirstOpen()
+    {
+        base.OnFirstOpen();
+        cooperViewItem = GetGameObject("cooperList/cooperView");
+        cooperListTrs = GetTransform("cooperList");
+        cooperViewItem.SetActive(false);
+    }
+
+
+
+    public override void OnShow()
+    {
+        base.OnShow();
+        UpdateView();
+        AddEvent();
+    }
+    void AddEvent()
+    {
+        EventManager.RegistEvent(EventType.CooperDataUpdate, UpdateView);
+    }
+    void RemoveEvent()
+    {
+        EventManager.UnRegistEvent(EventType.CooperDataUpdate, UpdateView);
+    }
+        
+    void UpdateView(object ob = null )
+    {      
+        int cooperCount = playerModel.cooperMap.Count;
+        while(cooperCount> cooperItems.Count)
+        {
+            cooperItems.Add(new CooperItem(GameObject.Instantiate(cooperViewItem, cooperListTrs)));
+
+        }
+        
+        int index = 0;
+        foreach(var cooper in playerModel.cooperMap.Values)
+        {
+            cooperItems[index].SetInfo(cooper);
+            cooperItems[index].SetVisible(true);
+            index++;
+        }
+        for(int i=index;i<cooperItems.Count;i++)
+        {
+            cooperItems[i].SetVisible(false);
+        }
+    }
+
+    public override void OnHide()
+    {
+        base.OnHide();
+        RemoveEvent();
+    }
+
+    public override void OnDispose()
+    {
+        base.OnDispose();
+    }
+}
+

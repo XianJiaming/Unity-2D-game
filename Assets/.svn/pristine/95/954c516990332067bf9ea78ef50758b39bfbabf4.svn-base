@@ -1,0 +1,10 @@
+using System.Collections.Generic;
+using UnityEngine;
+namespace DataClass
+{
+
+public class ConfigRoleManager : ScriptableObject
+
+{
+public List<ConfigRole> allDatas = new List<ConfigRole>();
+}}

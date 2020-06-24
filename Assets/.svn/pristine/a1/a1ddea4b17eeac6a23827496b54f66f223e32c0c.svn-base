@@ -1,0 +1,10 @@
+using System.Collections.Generic;
+using UnityEngine;
+namespace DataClass
+{
+
+public class TestManager : ScriptableObject
+
+{
+public List<Test> allDatas = new List<Test>();
+}}

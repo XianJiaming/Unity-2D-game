@@ -1,0 +1,50 @@
+using System.Collections.Generic;
+using System;
+namespace DataClass
+{
+
+    public class ConfigRoleManager : ConfigDataManager<ConfigRoleManager,ConfigRole>
+
+    {
+    
+    public override void Init( )
+    {
+    name = "ConfigRole";
+    ConfigRole config = null;
+    
+    config = new ConfigRole();
+    config.id = 10;
+    config.name = "辣鸡天";
+    config.attributes = new int[]{50,100,20,30,50,100,80};
+    config.cooperId = 100;
+    config.cost = 1;
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRole();
+    config.id = 11;
+    config.name = "牛昊松";
+    config.attributes = new int[]{20,50,100,60,70,300,50};
+    config.cooperId = 101;
+    config.cost = 2;
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRole();
+    config.id = 12;
+    config.name = "赵兴强";
+    config.attributes = new int[]{60,70,50,60,50,250,10};
+    config.cooperId = 100;
+    config.cost = 3;
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigRole();
+    config.id = 13;
+    config.name = "罗昕宇";
+    config.attributes = new int[]{50,100,100,20,30,50,15};
+    config.cooperId = 101;
+    config.cost = 4;
+    allDatas.Add( config.id, config)
+;
+    base.Init();
+    }
+}
+}

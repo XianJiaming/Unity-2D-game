@@ -1,0 +1,221 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine.UI;
+using UnityEngine;
+
+ public class WndEquip:ViewBase
+{
+
+//-----------------------------------------------------------
+    class EquipItem:ItemView<Equip>
+    {
+        
+      
+
+        GameObject itemGo;
+        GameObject gridGo;
+        Text nameText;
+        Image icon;
+        public override void Init(GameObject go, int index)
+        {
+            gridGo = go;
+            itemGo = gridGo.transform.Find("bagItem").gameObject;
+            this.index = index;//该item对应的哪个格子
+            nameText = UIUtil.GetText(itemGo, "name");
+            icon = UIUtil.GetImage(itemGo, "icon");
+            var uiDrag = UIDrag.GetUIDrag(icon.gameObject);
+            uiDrag.AddBeginDrag(OnBeginDrag);
+            uiDrag.AddDrag(OnDrag);
+            uiDrag.AddEndDrag(OnEndDrag);
+            UIUtil.SetUIOnClick(icon.gameObject, OnClick);
+        }
+
+        Vector3 orPosition; //原始坐标
+
+        void OnBeginDrag(GameObject go)
+        {
+            orPosition = itemGo.transform.position;
+            gridGo.transform.SetAsLastSibling();
+        }
+
+        void OnClick(GameObject go )
+        {
+            ViewManager.Get<WndTips>("WndTips").ShowInfo(info.desc);
+        }
+
+        void OnDrag(GameObject go)
+        {
+            //仅在ui的世界坐标和 鼠标的屏幕坐标一致时有用
+            itemGo.transform.position = Input.mousePosition;
+
+        }
+
+
+
+        void OnEndDrag(GameObject go)
+        {
+            itemGo.transform.position = orPosition;
+            var wndPrepare = ViewManager.Get<WndPrepare>("WndPrepare");
+            var mousePosition = Input.mousePosition;
+
+            int preRoleLength = wndPrepare.preRoleItems.Length;
+            int fightRoleLength = wndPrepare.fightRoleItems.Length;
+            //处理准备队列
+            for (int i = 0; i < preRoleLength; i++)
+            {
+                if (wndPrepare.preRoleItems[i].role != null)
+                {
+                    bool isHere = RectTransformUtility.RectangleContainsScreenPoint(wndPrepare.prePositions[i], Input.mousePosition);
+                    if (isHere)
+                    {
+                        //
+                        var equipModel = ModelManager.Get("EquipModel") as EquipModel;
+
+                        var playerModel = ModelManager.Get("PlayerModel") as PlayerModel;
+
+                        bool res = playerModel.preRoles[i].AddEquip(equipModel.GetEquip(index));
+                        if(res) equipModel.RemoveEquip(index);
+                        //equipModel.AddEquip(downEquip);
+
+
+
+                        return;
+                    }
+                }
+            }
+            //处理战斗队列
+            for (int i = 0; i < fightRoleLength; i++)
+            {
+                if (wndPrepare.fightRoleItems[i].role != null)
+                {
+                    bool isHere = RectTransformUtility.RectangleContainsScreenPoint(wndPrepare.fightPositions[i], Input.mousePosition);
+                    if (isHere)
+                    {
+                        //
+                        var equipModel = ModelManager.Get("EquipModel") as EquipModel;
+
+                        var playerModel = ModelManager.Get("PlayerModel") as PlayerModel;
+
+                        
+                        bool res = playerModel.fightRoles[i].AddEquip(equipModel.GetEquip(index));
+                        if (res) equipModel.RemoveEquip(index);
+
+
+                        return;
+                    }
+                }
+            }
+
+        }
+
+        public override void UpdateView()
+        {
+            if(info!=null)
+            {
+                itemGo.SetActive(true);
+                nameText.text = info.name;
+            }
+            else
+            {
+                itemGo.SetActive(false);
+            }
+        }
+
+        
+    }
+
+    //-----------------------------------------------------------
+    GameObject bagItemGo;
+    RectTransform bagListRect;
+    EquipModel equipModel;
+    EquipItem[] equipItems = new EquipItem[18];
+
+    public override void Init()
+    {
+        base.Init();
+        equipModel = ModelManager.Get("EquipModel") as EquipModel;
+
+        
+    }
+    WndPrepare wndPrepare;
+
+    public override void OnFirstOpen()
+    {
+        base.OnFirstOpen();
+
+        wndPrepare = ViewManager.Get<WndPrepare>("WndPrepare");
+
+        
+
+        GameObject bagGrid = GetGameObject("bagList/grid");
+
+        bagListRect = GetRectTransform("bagList");
+
+        AddUIButton("closeBtn", (go) => { SetVisible(false); });
+
+        //18个装备格子
+        for (int i = 0; i < 18; i++)
+        {
+            var equipItem = new EquipItem();
+            GameObject go = GameObject.Instantiate(bagGrid, bagListRect);
+           
+            equipItem.Init(go,i);
+            equipItem.SetInfo(equipModel.GetEquip(i));
+            equipItems[i] = equipItem;
+
+           
+        }
+        bagGrid.SetActive(false);
+
+        TimeManager.Regist((id) => { GameObject.Destroy(GetComponent<GridLayoutGroup>("bagList")); }
+        , 0.5f, 0, 1);
+
+    }
+
+    void UpdateView( )
+    {
+        for(int i=0;i<18;i++)
+        {
+            equipItems[i].SetInfo(equipModel.GetEquip(i));
+        }
+
+    }
+
+    public override void OnShow()
+    {
+        base.OnShow();
+        AddEvent();
+        UpdateView();
+    }
+
+
+    public override void OnHide()
+    {
+        base.OnHide();
+        RemoveEvent();
+    }
+
+
+    public override void OnDispose()
+    {
+        base.OnDispose();
+    }
+
+    void OnEquipUpdate(dynamic index)
+    {
+        equipItems[index].SetInfo( equipModel.GetEquip(index));
+    }
+
+    void AddEvent()
+    {
+        EventManager.RegistEvent(EventType.EquipUpdate, OnEquipUpdate);
+    }
+    void RemoveEvent( )
+    {
+        EventManager.UnRegistEvent(EventType.EquipUpdate, OnEquipUpdate);
+    }
+
+    
+}
+    
+

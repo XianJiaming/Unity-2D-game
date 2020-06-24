@@ -1,0 +1,175 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using DG.Tweening;
+
+class WndTips:ViewBase
+{
+    RectTransform selfRect;
+
+    GameObject fightTipsGo;
+
+    GameObject detailInfoGo;
+    RectTransform detailInfoRect;
+    Text detailInfoText;
+
+    List<RectTransform> tipRectList;
+
+    public override void Init() {
+        base.Init();
+        layer = GameLayer.Tips;
+        SetVisible(true);
+    }
+
+   
+
+    public override void OnFirstOpen()
+    {
+        tipsGo = GetGameObject("tips");
+        tipsGo.SetActive(false);
+
+        orTipsVector = tipsGo.transform.position;
+
+        tipRectList = new List<RectTransform>();
+        fightTipsGo = GetGameObject("fightTips");
+        fightTipsGo.SetActive(false);
+
+        detailInfoGo = GetGameObject("info");
+        detailInfoGo.SetActive(false);
+        detailInfoText = GetText("info/text");
+        detailInfoRect = GetRectTransform("info");
+
+        selfRect = go.GetComponent<RectTransform>();
+    }
+
+    public override void OnShow() { }
+
+    public override void OnHide() { }
+
+    public override void OnDispose() { }
+
+    //战斗中会使用这个方法
+    public void ShowMsg( string content , Vector3 position)
+    {
+        var tipsP =  RectTransformUtility.WorldToScreenPoint(Camera.main, position);
+
+        RectTransform tip;
+        if (tipRectList.Count == 0)
+        {
+            tip = GameObject.Instantiate(fightTipsGo, go.transform).GetComponent<RectTransform>();
+            
+        }
+        else
+        {
+            tip = tipRectList[tipRectList.Count - 1];
+            
+            tipRectList.Remove(tip);
+        }
+
+        tip.gameObject.SetActive(true);
+        Text t = tip.GetComponent<Text>();
+        t.text = content;
+        t.color = Color.white;
+
+        
+        t.DOColor(Color.clear, 3f).OnComplete(
+            () =>
+            {
+                tip.gameObject.SetActive(false);
+                tipRectList.Add(tip);
+            });
+        
+
+        tip.position = tipsP;
+
+        t.transform.DOLocalMoveY(t.transform.localPosition.y + 80, 1.5f);
+    }
+
+    public void ShowEtlInfo(Entanglement etl)
+    {
+        ShowInfo(etl.GetDesc());
+    }
+
+    public void ShowRoleInfo(RoleBase role)
+    {
+
+        int level = role.GetLevel();
+        var attributeData = DataClass.ConfigAttributeManager.Instance().allDatas;
+        var roleAttributeData = DataClass.ConfigRoleManager.Instance().allDatas[role.GetRoleId()].attributes[ level - 1];
+        
+
+        var attributeSb = new System.Text.StringBuilder();
+        for (int i = 0; i < 7; i++)
+        {
+            float nowValue = role.attributes[i]; //当前属性
+            int orValue = roleAttributeData[i]; //原属性
+
+            if ( nowValue > orValue)
+            {
+                attributeSb.Append($"{attributeData[i].name}:<color=yellow>{nowValue.ToString()}</color>  ");
+            }
+            else
+            {
+                attributeSb.Append($"{attributeData[i].name}:{nowValue.ToString()}  ");
+            }
+            
+        }
+        string cooperName = DataClass.ConfigCooperationManager.Instance().allDatas[role.GetCooperId()].name;
+
+        string equipContent = $"{role.GetEquip(0)?.desc}\n{role.GetEquip(1)?.desc}";
+
+        string content = $"<size=50><color=red>{role.name} {cooperName}</color></size>\n{attributeSb.ToString()}\n等级:{level.ToString()}\n {role.skill?.GetDesc()}\n{equipContent}";
+
+        ShowInfo(content);
+    }
+
+    void CanCloseInfo(object ob=null )
+    {
+        if( !RectTransformUtility.RectangleContainsScreenPoint(detailInfoRect, Input.mousePosition))
+        {
+            detailInfoGo.SetActive(false);
+            EventManager.UnRegistEvent(EventType.InputClick, CanCloseInfo);
+        }
+    }
+
+
+    public void ShowInfo( string content)
+    {
+        detailInfoGo.SetActive(true);
+
+        detailInfoText.text = content;
+
+        EventManager.RegistEvent(EventType.InputClick, CanCloseInfo);
+    }
+    static Vector3 orTipsVector;
+    static GameObject tipsGo;
+    static List<GameObject> tipsGos = new List<GameObject>();
+    public static void ShowTips(string content )
+    {
+        GameObject tempTipsGo = null;
+        if(tipsGos.Count>0)
+        {
+            tempTipsGo = tipsGos[0];
+            
+            tipsGos.Remove(tempTipsGo);
+        }
+        else
+        {
+            var wndtips = ViewManager.Get<WndTips>("WndTips");
+            tempTipsGo = GameObject.Instantiate(tipsGo, wndtips.rect);            
+        }
+        tempTipsGo.SetActive(true);
+        tempTipsGo.transform.position = orTipsVector;
+        tempTipsGo.transform.Find("text").GetComponent<Text>().text = content;
+
+        tempTipsGo.transform.DOLocalMoveY(tempTipsGo.transform.localPosition.y + 120, 1.5f).OnComplete(
+            () => {
+                tempTipsGo.SetActive(false);
+                tipsGos.Add(tempTipsGo);
+            }
+            );
+        
+    }
+
+}

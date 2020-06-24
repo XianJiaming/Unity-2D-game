@@ -1,0 +1,106 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using DG.Tweening;
+
+class WndTips:ViewBase
+{
+    RectTransform selfRect;
+
+    GameObject TipsGo;
+
+    GameObject detailInfoGo;
+    RectTransform detailInfoRect;
+    Text detailInfoText;
+
+    List<RectTransform> tipRectList;
+
+    public override void Init() {
+        base.Init();
+        layer = GameLayer.Tips;
+        SetVisible(true);
+    }
+
+    public override void OnFirstOpen() {
+        tipRectList = new List<RectTransform>();
+        TipsGo = GetGameObject("tips");
+        TipsGo.SetActive(false);
+
+        detailInfoGo = GetGameObject("info");
+        detailInfoGo.SetActive(false);
+        detailInfoText = GetText("info/text");
+        detailInfoRect = GetRectTransform("info");
+
+        selfRect = go.GetComponent<RectTransform>();
+    }
+
+    public override void OnShow() { }
+
+    public override void OnHide() { }
+
+    public override void OnDispose() { }
+
+    public void ShowMsg( string content , Vector3 position)
+    {
+        RectTransform tip;
+        if (tipRectList.Count == 0)
+        {
+            tip = GameObject.Instantiate(TipsGo, go.transform).GetComponent<RectTransform>();
+            
+        }
+        else
+        {
+            tip = tipRectList[tipRectList.Count - 1];
+            
+            tipRectList.Remove(tip);
+        }
+
+        tip.gameObject.SetActive(true);
+        Text t = tip.GetComponent<Text>();
+        t.text = content;
+        t.color = Color.white;
+
+        
+        t.DOColor(Color.clear, 3f).OnComplete(
+            () =>
+            {
+                tip.gameObject.SetActive(false);
+                tipRectList.Add(tip);
+            });
+        
+
+        tip.position = position;
+
+        t.transform.DOLocalMoveY(t.transform.localPosition.y + 80, 1.5f);
+    }
+
+    public void ShowRoleInfo(RoleBase role)
+    {
+
+        detailInfoGo.SetActive(true);
+        string content = $"<size=50><color=red>{role.name}</color></size>\n力量:{role.attributes[0]}\n等级:{role.GetLevel().ToString()}";
+        detailInfoText.text = content;
+
+
+        EventManager.RegistEvent(EventType.InputClick, CanCloseRoleInfo);
+
+    }
+
+    void CanCloseRoleInfo(object ob=null )
+    {
+        if( !RectTransformUtility.RectangleContainsScreenPoint(detailInfoRect, Input.mousePosition))
+        {
+            detailInfoGo.SetActive(false);
+            EventManager.UnRegistEvent(EventType.InputClick, CanCloseRoleInfo);
+        }
+    }
+
+
+    public void ShowRoleInfo( int roleId)
+    {
+
+    }
+
+
+}

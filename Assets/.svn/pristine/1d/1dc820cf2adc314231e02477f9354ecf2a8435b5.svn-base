@@ -1,0 +1,53 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System;
+using Object = System.Object;
+
+public class EventManager
+{
+    
+
+    private static Dictionary<EventType, List<Action<dynamic>>> eventMap = new Dictionary<EventType, List<Action<dynamic>>>();
+
+    static public void RegistEvent(EventType type, Action<dynamic> action)
+    {
+        if (!eventMap.ContainsKey(type))
+            eventMap.Add(type, new List<Action<Object>>());
+
+        eventMap[type].Add(action);
+    }
+
+
+
+    static public void UnRegistEvent(EventType type, Action<dynamic> action)
+    {
+        if (!eventMap.ContainsKey(type))
+        {
+            Debug.LogError("注销不存在的事件类型.");
+            return;
+        }
+
+        if (!eventMap[type].Contains(action))
+            Debug.LogError("当前事件里不存在该方法.");
+        else
+            eventMap[type].Remove(action);
+    }
+
+    static public void ExecuteEvent(EventType type,dynamic param = null)
+    {
+        if( !eventMap.ContainsKey(type))
+        {
+            return;
+        }
+
+        for (int i = 0; i < eventMap[type].Count; i++)
+        {
+            eventMap[type][i](param);
+        }
+    }
+    
+
+   
+    
+}

@@ -1,0 +1,19 @@
+﻿public class EnumType
+{
+    public enum FightListUpdateRole
+    {
+        AddRole = 0,
+        DeleteRole = 1
+    }
+
+    public enum PreListUpdateRole
+    {
+        AddRole = 0,
+        DeleteRole = 1
+    }
+
+}
+
+
+   
+

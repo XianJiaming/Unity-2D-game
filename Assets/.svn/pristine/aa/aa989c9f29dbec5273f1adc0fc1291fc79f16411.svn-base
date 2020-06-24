@@ -1,0 +1,122 @@
+﻿using System;
+using System.Collections.Generic;
+using DataClass;
+using UnityEngine;
+
+public class RoleShopModel:SingleClass<RoleShopModel>
+{
+    //人口等级，对应商店等级,去plyaerModel取
+    int level;
+
+    public int[] roles;   //随机给出的角色池子，用id代替
+
+    public const int Max_Role_Count = 5;
+
+    //不同费用role的id Map
+    public Dictionary<int, List<int>> roleCostMap = new Dictionary<int, List<int>>();
+
+    protected override void Init()
+    {
+        base.Init();
+
+        level = 2;
+        roles = new int[Max_Role_Count]
+        {
+            10,11,12,10,10
+        };
+        //数据初始化
+        for(int i=1;i<= Max_Role_Count; i++)
+        {
+            roleCostMap.Add(i, new List<int>());
+        }
+
+        var roleDatas = ConfigRoleManager.Instance().allDatas;
+        foreach(var v in roleDatas)
+        {
+            roleCostMap[v.Value.cost].Add(v.Key);
+        }
+
+        AddEvent();
+    }
+
+    void AddEvent()
+    {
+        EventManager.RegistEvent(EventType.RefreshShop, OnRefreshShop);
+    }
+
+    public void OnBuyRole(int index)
+    {
+        int id = roles[index];
+
+
+        int cost = ConfigRoleManager.Instance().allDatas[id].cost;
+
+        if (PlayerModel.Instance().ReduceMoney(cost))
+        {
+            roles[index] = 0;
+            EventManager.ExecuteEvent(EventType.ShopDataUpdate);
+        }
+        else
+        {
+            Debug.Log("买不起");
+        }
+
+
+    }  
+        
+   
+    void OnRefreshShop( object ob = null)
+    {
+        
+        var data = ConfigRoleShopManager.Instance().allDatas[level];
+        var rates = data.rate;
+        //取得5个等级的概率范围
+        int rate1 = rates[0];
+        int rate2 = rates[1] + rate1;
+        int rate3 = rate2 + rates[2];
+        int rate4 = rate3 + rates[3];
+        int rate5 = rate4 + rates[4];
+
+        int[] levels = new int[Max_Role_Count];
+
+        for(int i=0; i<Max_Role_Count;i++)
+        {
+            int x = UnityEngine.Random.Range(1, 100);
+            if(x>=1 && x<= rate1)
+            {
+                levels[i] = 1;
+            }
+            else if(x> rate1 && x<= rate2)
+            {
+                levels[i] = 2;
+            }
+            else if(x > rate2 && x <= rate3)
+            {
+                levels[i] = 3;
+            }
+            else if(x > rate3 && x <= rate4)
+            {
+                levels[i] = 4;
+            }
+            else if( x > rate4 && x <= rate5)
+            {
+
+                levels[i] = 5;
+            }
+        }
+
+        for(int i=0;i < levels.Length;i++)
+        {
+            var idList = roleCostMap[levels[i]];
+            int index = UnityEngine.Random.Range(0, idList.Count);
+            int id = idList[index]; //取出一个随机id
+
+            roles[i] = id;
+
+
+        }
+
+        EventManager.ExecuteEvent(EventType.ShopDataUpdate);
+    }
+
+}

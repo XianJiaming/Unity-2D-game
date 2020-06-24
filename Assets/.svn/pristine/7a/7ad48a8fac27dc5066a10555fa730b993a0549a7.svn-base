@@ -1,0 +1,299 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+class FightManager
+{
+    public const int Max_Fight_List_Number = 9;
+    public static FightManager instance = new FightManager();
+    private FightManager()
+    {
+        Init();
+
+    }
+
+    //战斗中的羁绊
+    //public Dictionary<int, Cooperation> cooperMap = new Dictionary<int, Cooperation>();
+
+    public bool isAnyoneAct = false;
+
+    public RoleBase[] playerRoles;
+
+    public RoleBase[] aiRoles;
+
+    //场景中战斗时的位置信息
+//     Vector3[] playerPositions;
+//     Vector3[] aiPositions;
+
+
+
+
+    public void Init( )
+    {
+        playerRoles = new RoleBase[Max_Fight_List_Number];
+        aiRoles = new RoleBase[Max_Fight_List_Number];
+
+        
+
+        //SetPositionData();
+    }
+
+//     public void SetPositionData()
+//     {
+//         playerPositions = new Vector3[9]
+//         {
+//             new Vector3(-2,-1,0),new Vector3(0,-1,0),new Vector3(2,-1,0),
+//             new Vector3( -2,-2.5f,0), new Vector3(0,-2.5f,0), new Vector3(2, -2.5f,0),
+//             new Vector3( -2,-4,0), new Vector3(0, -4,0), new Vector3(2, -4, 0)
+//         };
+// 
+//         aiPositions = new Vector3[9]
+//         {
+//             new Vector3(-2,1,0), new Vector3(0,1,0), new Vector3(2,1,0),
+//             new Vector3(-2,2.5f,0), new Vector3(0,2.5f,0), new Vector3(2,2.5f,0),
+//             new Vector3(-2,4,0), new Vector3(0,4,0), new Vector3(2,4,0)
+//         };
+//     }
+
+    //参加战斗的2方队列
+    void InitFightList(RoleBase[] player, RoleBase[] ai)
+    {
+        for (int i = 0; i < playerRoles.Length; i++)
+        {
+            playerRoles[i] = player[i];
+            var role = playerRoles[i];
+            if (role != null)
+            {
+                /*role.SetGo(playerGos[i]);*/
+                role.BeginFight();
+                role.SetFightIndex(EnumType.FightListType.Player, i);
+                //role.UpdateView();
+               /* playerGos[i].SetActive(true);*/
+            }
+            else
+            {
+                playerRoleGos[i].SetActive(false);
+            }
+        }
+
+        for (int i = 0; i < aiRoles.Length; i++)
+        {
+            aiRoles[i] = ai[i];
+            var role = aiRoles[i];
+            if (role != null)
+            {
+               /* role.SetGo(aiGos[i]);*/
+                /*aiGos[i].SetActive(true);*/
+                role.BeginFight();
+                role.SetFightIndex(EnumType.FightListType.Ai, i);
+            }
+            else
+            {
+                aiRoleGos[i].SetActive(false);
+            }
+        }
+
+    }
+    GameObject[] playerRoleGos;
+    GameObject[] aiRoleGos;
+    public void BeginFight(RoleBase[] player, RoleBase[] ai, GameObject[] playerRoleGos, GameObject[] aiRoleGos)
+    {
+        this.playerRoleGos = playerRoleGos;
+        this.aiRoleGos = aiRoleGos;
+
+         
+        InitFightList(player, ai);
+
+        InitNeedEnd();
+        AddEvent();
+       
+        for (int i=0;i<9;i++)
+        {
+            var role = playerRoles[i];
+            if( role != null)
+            {
+                //role.SetFightPosition(playerPositions[i], i);
+                role.SetFightGo(playerRoleGos[i]);
+                role.SetTeamAndEnemy(playerRoles, aiRoles);
+               
+            }
+            role = aiRoles[i];
+            if( role != null)
+            {
+                //role.SetFightPosition(aiPositions[i], i);
+                role.SetFightGo(aiRoleGos[i]);
+                role.SetTeamAndEnemy(aiRoles, playerRoles);
+                
+            }         
+        }
+
+    }
+    void SetGos(GameObject[] playerRoleGos, GameObject[] aiRoleGos)
+    {
+        
+
+    }
+
+    bool isPlayerSuccess = false;
+
+    void EndFight()
+    {
+        RemoveEvent();
+       
+
+        //判断是玩家赢了吗
+        isPlayerSuccess = false;
+
+        for( int i=0;i<playerRoles.Length;i++)
+        {
+            if( playerRoles[i]!=null)
+            {
+                isPlayerSuccess = true;
+                break;
+            }
+        }
+
+        LevelEnd(isPlayerSuccess);
+
+        for (int i = 0; i < playerRoles.Length; i++)
+        {
+            //if (playerRoles[i] != null)
+                playerRoles[i]?.EndFight();
+            
+        }
+
+
+        for (int i = 0; i < aiRoles.Length; i++)
+        {
+            //if (aiRoles[i] != null)
+                aiRoles[i]?.EndFight();
+        }
+
+        EventManager.ExecuteEvent(EventType.FightEnd);
+
+        NextLevel();
+    }
+    void NextLevel( )
+    {
+        int curLevel = (ModelManager.Get("GameLevelModel") as GameLevelModel).GetLevel();
+
+        int hp = (ModelManager.Get("PlayerModel") as PlayerModel).GetHp();
+
+        if (curLevel < GameLevelModel.MaxLevel & hp>0)
+        {
+            EventManager.ExecuteEvent(EventType.NextLevel);
+        }           
+        else if(curLevel == GameLevelModel.MaxLevel &hp>0)
+        {
+            EventManager.ExecuteEvent(EventType.GameVectory);
+            Debug.Log("玩家取得了最终胜利!");
+        }
+    }
+
+    //根据玩家胜利与否处理结果
+    void LevelEnd( bool isSuccess)
+    {
+
+        if(isSuccess)
+        {
+            EventManager.ExecuteEvent(EventType.FightVectory);
+            Debug.Log("这把你赢了！");
+        }
+        else
+        {
+            PlayerModel playerModel = ModelManager.Get("PlayerModel") as PlayerModel;
+
+            EventManager.ExecuteEvent(EventType.FightFail);
+
+            
+            playerModel.SetHp(-10);
+        }
+    }
+
+
+    bool needEnd = false;
+    void InitNeedEnd( )
+    {
+        int temp = 0;
+        foreach(var v in playerRoles)
+        {
+            if( v != null)
+            {
+                temp++;
+                break;
+            }
+        }
+        foreach (var v in aiRoles)
+        {
+            if (v != null)
+            {
+                temp++;
+                break;
+            }
+        }
+        if (temp != 2)
+            needEnd = true;
+        else
+            needEnd = false;
+
+    }
+
+    public void Update(object ob)
+    {
+        
+        if(needEnd)
+        {
+            EndFight();
+            return;
+        }
+        
+       
+        for (int i = 0;i< playerRoles.Length;i++)
+        {
+            if (playerRoles[i] != null)
+                playerRoles[i].Update();
+        }
+        for (int i = 0; i < aiRoles.Length; i++)
+        {
+            if (aiRoles[i] != null)
+                aiRoles[i].Update();
+        }
+    }
+
+    //角色挂了 修改数据
+    void OnRoleDie(object ob)
+    {
+        //有角色挂了，将其移出战斗队列
+        RoleBase role = ob as RoleBase;
+        Remove(role.team, role.positionIndex);
+
+        //数据修改完毕
+
+        //判断是否需要结束战斗
+        needEnd = true;
+        for(int i=0;i<role.team.Length;i++)
+        {
+            if(role.team[i] != null)
+            {
+                needEnd = false;
+                break;
+            }
+        }
+    }
+
+    public void Remove(RoleBase[] team,int index)
+    {
+        team[index] = null;
+    }
+
+    void AddEvent()
+    {
+        EventManager.RegistEvent(EventType.Update, Update);
+        EventManager.RegistEvent(EventType.RoleDie, OnRoleDie);
+    }
+    void RemoveEvent()
+    {
+        EventManager.UnRegistEvent(EventType.Update, Update);
+        EventManager.UnRegistEvent(EventType.RoleDie, OnRoleDie);
+    }
+}

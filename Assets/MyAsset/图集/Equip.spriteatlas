@@ -1,0 +1,90 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Equip
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 0
+    variantMultiplier: 1
+    packables:
+    - {fileID: 102900000, guid: 4c3017ad13317ba48baa84c3694ac5d5, type: 3}
+    totalSpriteSurfaceArea: 6553600
+    bindAsDefault: 1
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 63a23f00e25f4ff4790d38a28eeaafd2, type: 3}
+  - {fileID: 21300000, guid: 1be8286130f22d745ad9ca733951852a, type: 3}
+  - {fileID: 21300000, guid: 10e88802724596e419e9c3d6a3b33196, type: 3}
+  - {fileID: 21300000, guid: 69dd2cd2aa6331c488aa7c0b33ec6952, type: 3}
+  - {fileID: 21300000, guid: f8e053e2235383346a008046748fa2e0, type: 3}
+  - {fileID: 21300000, guid: 4b2cbfe230a7ae24ab26e19d8419d87f, type: 3}
+  - {fileID: 21300000, guid: 09952e03694c5e44c8f2264f140a8ff3, type: 3}
+  - {fileID: 21300000, guid: ab643dc32133b67409ee3f8fdf112055, type: 3}
+  - {fileID: 21300000, guid: e571c156055525b4f93d3e53c97bfc1b, type: 3}
+  - {fileID: 21300000, guid: 155de8a651da9f4419877ab4e7fe1e5f, type: 3}
+  - {fileID: 21300000, guid: 90738b47ac25c0540a62cf79f3999cc7, type: 3}
+  - {fileID: 21300000, guid: 16d573b75cd0db245b95e99599a4b421, type: 3}
+  - {fileID: 21300000, guid: b85f3eb789069be4f8627dca0b1cfd4d, type: 3}
+  - {fileID: 21300000, guid: f266d80a07e364b4e86e9c14bd4b046e, type: 3}
+  - {fileID: 21300000, guid: 35da9e4a967e19845b53cf50ffb1d455, type: 3}
+  - {fileID: 21300000, guid: 90e2b76a5a11eb44a9ab64fc5afbc848, type: 3}
+  - {fileID: 21300000, guid: 77419aca040d0c84d896f2d012ab9565, type: 3}
+  - {fileID: 21300000, guid: 6e5f12da94cc7894fb4521a0e8b65b25, type: 3}
+  - {fileID: 21300000, guid: 088e452b7e18c0b40a4957f5ba1c4db0, type: 3}
+  - {fileID: 21300000, guid: 7fd2c1db44b4cdd49a331fb96e999aac, type: 3}
+  - {fileID: 21300000, guid: 137ed26c765fb3440a51a09b24e11d75, type: 3}
+  - {fileID: 21300000, guid: d7ea547c7b9dc3441a85f525b96cb532, type: 3}
+  - {fileID: 21300000, guid: 0cb73d1d25d20c14994b177d3a95ae45, type: 3}
+  - {fileID: 21300000, guid: 65a886fef98f1ee4d8be53186d617eae, type: 3}
+  - {fileID: 21300000, guid: 6e3bc4df0c4f5894d87d3c29f9275dd7, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - 11
+  - 18
+  - 4
+  - 5
+  - 19
+  - yellow
+  - blue
+  - 14
+  - 7
+  - 12
+  - white
+  - 20
+  - 16
+  - 13
+  - red
+  - 9
+  - 6
+  - 2
+  - 3
+  - 15
+  - 8
+  - 1
+  - green
+  - 17
+  - 10
+  m_Tag: Equip
+  m_IsVariant: 0

@@ -1,0 +1,102 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using DG.Tweening;
+
+public class WndFight:ViewBase
+{
+    RectTransform[] playerPositions;
+    RectTransform[] aiPositions;
+
+    GameObject[] playerRoleGos;
+    GameObject[] aiRoleGos;
+
+   
+    FightManager fightManager;
+    public override void Init()
+    {
+        base.Init();
+        layer = GameLayer.Fight;
+
+
+    }
+
+    public override void OnFirstOpen()
+    {
+        base.OnFirstOpen();
+
+        GameObject fightRoleGo = GetGameObject("fightRoleGo");
+        
+
+        fightManager = FightManager.instance;
+        
+        int count = FightManager.Max_Fight_List_Number;
+
+
+
+        Transform playerPos = GetTransform("playerPosition");
+        playerPositions = new RectTransform[count];
+        for (int i = 0; i < count; i++)
+        {
+            playerPositions[i] = playerPos.Find(i.ToString()).GetComponent<RectTransform>();
+        }
+
+        Transform aiPos = GetTransform("aiPosition");
+        aiPositions = new RectTransform[count];
+        for (int i = 0; i < count; i++)
+        {
+            aiPositions[i] = aiPos.Find(i.ToString()).GetComponent<RectTransform>();
+        }
+
+
+
+        playerRoleGos = new GameObject[count];
+        for (int i = 0; i < count; i++)
+        {
+            var go = GameObject.Instantiate(fightRoleGo, playerPositions[i]);
+            go.transform.localPosition = Vector2.zero;
+            playerRoleGos[i] = go;
+        }
+
+        aiRoleGos = new GameObject[count];
+        for (int i = 0; i < count; i++)
+        {
+            var go = GameObject.Instantiate(fightRoleGo, aiPositions[i]);
+            go.transform.localPosition = Vector2.zero;
+            aiRoleGos[i] = go;
+        }
+        GameObject.Destroy(fightRoleGo);
+    }
+
+    public override void OnShow()
+    {
+        base.OnShow();
+
+        AddEvent();
+
+        fightManager.BeginFight(PlayerModel.Instance().fightRoles, AIModel.instance.fightRoles , playerRoleGos, aiRoleGos);
+              
+    }
+
+    public override void OnHide() {
+        RemoveEvent();
+    }
+
+    public override void OnDispose() { }
+
+    void OnFightOver(object ob = null )
+    {
+        SetVisible(false);
+        ViewManager.Get("WndPrepare").SetVisible(true);
+    }
+
+    void AddEvent( )
+    {
+        EventManager.RegistEvent(EventType.FightEnd, OnFightOver);
+    }
+    void RemoveEvent( )
+    {
+        EventManager.UnRegistEvent(EventType.FightEnd, OnFightOver);
+    }
+}

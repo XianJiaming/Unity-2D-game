@@ -1,0 +1,185 @@
+﻿using System;
+using System.Collections.Generic;
+
+
+//战斗结束后 获得 5 金币
+
+//战斗结束后 玩家提升5点 hp
+
+//战斗开始时，我方随机一名角色释放技能
+
+//战斗开始时，我方所有单位无敌3s
+
+//随机获得2个5费单位
+
+//这里只是用于读取天赋数据，玩家的天赋是存在 playermodel里的
+public class TalentModel:ModelBase
+{
+    PlayerModel playerModel;
+    RoleShopModel shopModel;
+
+    //存所有的天赋id
+    public List<int> talentIds = new List<int>();
+
+    protected override void Init()
+    {
+        playerModel = ModelManager.Get<PlayerModel>("PlayerModel");
+
+
+        var talentData = DataClass.ConfigTalentManager.Instance().allDatas;
+        
+        foreach(var v in talentData)
+        {
+            talentIds.Add(v.Key);
+        }        
+    }
+}
+    
+namespace MyTalent
+{
+    //一次性天赋作用完 后直接移出
+    public class Talent
+    {
+        
+
+        public static Talent CreatTalent(int id)
+        {
+            var talent = Activator.CreateInstance(Type.GetType($"MyTalent.Talent{id.ToString()}")) as Talent;
+            talent.Init(id);
+            return talent;
+        }
+
+
+        public int id;
+        public string name;
+        public string desc;
+
+        public virtual void Effect()
+        {
+
+        }
+        //移出该天赋
+        public virtual void RemoveEffect()
+        {
+
+        }
+        //该方法请手动调用
+        public void Init(int id)
+        {
+            var datas = DataClass.ConfigTalentManager.Instance().allDatas[id];
+            this.id = id;
+            name = datas.name;
+            desc = datas.desc;
+        }
+
+    }
+    //战斗结束后获得5金币
+
+    public class Talent10 : Talent
+    {
+       
+        public override void Effect()
+        {
+            base.Effect();
+            EventManager.RegistEvent(EventType.FightEnd, GetMoney);
+        }
+
+        void GetMoney(dynamic dy = null)
+        {
+             ModelManager.Get<PlayerModel>("PlayerModel").AddMoney(5);
+        }
+
+        public override void RemoveEffect()
+        {
+            base.RemoveEffect();
+            EventManager.UnRegistEvent(EventType.FightEnd, GetMoney);
+        }
+    }
+
+    //战斗开始时，我方随机一名角色释放技能
+    public class Talent11 : Talent
+    {
+        public override void Effect()
+        {
+            UnityEngine.Debug.Log("随机使用技能--天赋注册");
+            base.Effect();   
+            EventManager.RegistEvent(EventType.FightStart, UseSkill);
+           
+        }
+
+        void UseSkill(dynamic dy = null)
+        {
+            var playerModel = ModelManager.Get<PlayerModel>("PlayerModel");
+            var fightRoles = playerModel.fightRoles;
+
+            List<RoleBase> roles = new List<RoleBase>();
+            foreach (var role in fightRoles)
+            {
+                if (role != null)
+                {
+                    roles.Add(role);
+                }
+            }
+
+            int index = UnityEngine.Random.Range(0, roles.Count);
+
+            RoleBase choseRole = roles[index];
+            UnityEngine.Debug.Log("随机使用技能--天赋生效");
+            choseRole.UseSkill();
+        }
+
+        public override void RemoveEffect()
+        {
+            base.RemoveEffect();
+            EventManager.UnRegistEvent(EventType.FightStart, UseSkill);
+        }
+    }
+    //随机获得2个5费单位
+    public class Talent12:Talent
+    {
+        public override void Effect()
+        {
+            base.Effect();
+            
+            var playerModel = ModelManager.Get<PlayerModel>("PlayerModel");
+            var shopModel = ModelManager.Get<RoleShopModel>("RoleShopModel");
+            var cost5roles = shopModel.roleCostMap[5];
+            int id1 = cost5roles[UnityEngine.Random.Range(0, cost5roles.Count)];
+            int id2 = cost5roles[UnityEngine.Random.Range(0, cost5roles.Count)];
+
+            playerModel.AddRolePre(id1);
+            playerModel.AddRolePre(id2);
+
+
+            playerModel.talents.Remove(this);
+        }
+    }
+
+    //无敌3秒
+    public class Talent13:Talent
+    {
+        public override void Effect()
+        {
+            base.Effect();
+            EventManager.RegistEvent(EventType.FightStart, AllWd);
+        }
+
+        public override void RemoveEffect()
+        {
+            base.RemoveEffect();
+            EventManager.UnRegistEvent(EventType.FightStart, AllWd);
+        }
+
+        void AllWd(dynamic dy)
+        {
+            var roles = FightManager.instance.playerRoles;
+            foreach(var role in roles)
+            {
+                if(role!= null)
+                {
+                    RoleHelper.SetWuDi(role, 3f);
+                }
+            }
+        }
+    }
+}

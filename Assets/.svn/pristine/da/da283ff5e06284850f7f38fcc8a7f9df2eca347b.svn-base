@@ -1,0 +1,286 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+using Random = UnityEngine.Random;
+
+public class SkillHelp
+{
+    //public delegate RoleBase[] GetSkillTarget(RoleBase[] team, RoleBase[] enemy, int param2 = 0, int targetQueue = 1);
+
+    
+
+    public static RoleBase[] GetSkillTarget(RoleBase[] team, RoleBase[] enemy, int[] targetParam, int targetQueue = 1)
+    {
+        
+        int param1 = targetParam[0];
+        int param2 = targetParam[1];
+
+        RoleBase[] target = null;
+        switch (param1)
+        {
+            case 4:
+                target = OneTarget(team,enemy, param2, targetQueue);
+                break;
+            case 1:
+                target = AllTarget(team, enemy, param2, targetQueue);
+                break;
+            case 0:
+                target = RandomN(team, enemy, param2, targetQueue);
+                break;
+            case 2:
+                target = OneRow(team, enemy, param2, targetQueue);
+                break;
+            case 3:
+                target = OneLine(team, enemy, param2, targetQueue);
+                break;            
+            default:    
+                Debug.LogError("无该种选择技能目标方式-" + param1.ToString());
+                break;
+        }
+        return target;
+    }
+    //确定目标队列
+    public static RoleBase[] GetOrRoles(RoleBase[] team, RoleBase[] enemy, int targetQueue)
+    {
+        RoleBase[] orArray;
+        if (targetQueue == 1)
+        {
+            orArray = enemy;
+        }
+        else if (targetQueue == 0)
+        {
+            orArray = team;
+        }
+        else
+        {
+            orArray = null;
+            Debug.LogError("目标队列参数错误");
+            return null;
+        }
+        return orArray;
+    }
+    //所有目标
+    public static RoleBase[] AllTarget(RoleBase[] team, RoleBase[] enemy,int param2 = 0  ,int targetQueue = 1)
+    {
+        if(targetQueue == 1)
+        {
+
+            return enemy;
+        }
+        else if(targetQueue == 0)
+        {
+            return team;
+        }
+        else
+        {
+            Debug.LogError("目标队列类型不正确--" + targetQueue.ToString());
+            return null;
+        }
+    }
+    //随机选出n个目标
+    public static RoleBase[] RandomN(RoleBase[] team, RoleBase[] enemy, int param2, int targetQueue = 1)
+    {
+        List<RoleBase> targetRole = new List<RoleBase>(param2);
+
+        //确定是我方还是敌方
+        RoleBase[] orArray = GetOrRoles(team, enemy, targetQueue);
+
+        List<int> index = new List<int>();
+
+        for (int i = 0; i < orArray.Length; i++)
+            {
+                if (orArray[i] != null)
+                {
+                    index.Add(i);
+                }
+            }
+           
+        for (int i = 0; i < param2; i++)
+        {
+            if (index.Count == 0)
+                    break;
+            int randomIndex = Random.Range(0, index.Count);
+               
+            targetRole.Add(orArray[index[randomIndex]]);
+            index.Remove(index[randomIndex]);
+        }
+        return targetRole.ToArray();
+    
+    }
+
+    //选出一排目标
+    public static RoleBase[] OneRow(RoleBase[] team, RoleBase[] enemy, int param2, int targetQueue = 1)
+    {
+        RoleBase[] orArray = GetOrRoles(team, enemy, targetQueue);
+
+        if( param2 == 0) //随机一排
+        {
+            //筛选出有人的排
+            List<int> rows = new List<int>(3);
+
+            for(int i =0;i<3;i++)
+            {
+                if(orArray[i]!= null)
+                {
+                    rows.Add(1);
+                    break;
+                }
+
+            }
+            for (int i = 3; i < 6; i++)
+            {
+                if (orArray[i] != null)
+                {
+                    rows.Add(2);
+                    break;
+                }
+
+            }
+            for (int i = 6; i < 9; i++)
+            {
+                if (orArray[i] != null)
+                {
+                    rows.Add(3);
+                    break;
+                }
+
+            }
+
+            int rowIndex = DataHelp.GetRandom<int>(rows);
+
+            return new RoleBase[] { orArray[3 * rowIndex - 3], orArray[3 * rowIndex - 2], orArray[3 * rowIndex - 1] };
+
+
+        }
+        else if( param2 == 1)
+        {
+            //第一有人的那一排
+            int index = -1;
+            for(int i=0;i<orArray.Length;i++)
+            {
+                if(orArray[i]!=null)
+                {
+                    index = i;
+                    break;
+                }
+            }
+
+            int rowIndex = index / 3 + 1;
+
+            return new RoleBase[] { orArray[3 * rowIndex - 3], orArray[3 * rowIndex - 2], orArray[3 * rowIndex - 1] };
+        }
+        else
+        {
+            Debug.LogError("获取排目标参数错误");
+            return null;
+        }
+
+    }
+
+
+    //直接选择当前队列的第一个目标
+    public static RoleBase[] OneTarget(RoleBase[] team, RoleBase[] enemy, int param2 = 0, int targetQueue = 1)
+    {
+        RoleBase[] target = new RoleBase[1];
+
+        if (targetQueue == 1)
+        {
+            for(int i =0;i<enemy.Length;i++)
+            {
+                if(enemy[i]!=null)
+                {
+                    target[0] = enemy[i];
+                    break;
+                }
+            }
+        }
+        else if (targetQueue == 0)
+        {
+            for (int i = 0; i < team.Length; i++)
+            {
+                if (team[i] != null)
+                {
+                    target[0] = team[i];
+                    break;
+                }
+            }
+        }
+        else
+        {
+            Debug.LogError("目标队列类型不正确--" + targetQueue.ToString());
+            return null;
+        }
+
+        return target;
+    }
+
+    //一列
+    public static RoleBase[] OneLine(RoleBase[] team, RoleBase[] enemy, int param2 = 0, int targetQueue = 1)
+    {
+        RoleBase[] orArray = GetOrRoles(team, enemy, targetQueue);
+
+        if (param2 == 0) //随机一列
+        {
+            //筛选出有人的列
+            List<int> lines = new List<int>(3);
+
+            for (int i = 0; i < 9; i = i+3)
+            {
+                if (orArray[i] != null)
+                {
+                    lines.Add(1);
+                    break;
+                }
+
+            }
+            for (int i = 1; i < 9; i = i + 3)
+            {
+                if (orArray[i] != null)
+                {
+                    lines.Add(2);
+                    break;
+                }
+
+            }
+            for (int i = 2; i < 9; i = i + 3)
+            {
+                if (orArray[i] != null)
+                {
+                    lines.Add(3);
+                    break;
+                }
+
+            }
+
+            int rowIndex = DataHelp.GetRandom<int>(lines);
+
+            return new RoleBase[] { orArray[rowIndex - 1], orArray[rowIndex +2], orArray[rowIndex + 5] };
+
+
+        }
+        else if (param2 == 1)
+        {
+            //第一有人的那一列
+            int index = -1;
+            for (int i = 0; i < orArray.Length; i++)
+            {
+                if (orArray[i] != null)
+                {
+                    index = i;
+                    break;
+                }
+            }
+
+            int rowIndex = index % 3 + 1;
+
+            return new RoleBase[] { orArray[rowIndex - 1], orArray[rowIndex + 2], orArray[rowIndex + 5] };
+        }
+        else
+        {
+            Debug.LogError("获取排目标参数错误");
+            return null;
+        }
+
+    }
+}
+

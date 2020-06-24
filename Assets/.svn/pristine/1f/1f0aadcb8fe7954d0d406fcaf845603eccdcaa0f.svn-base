@@ -1,0 +1,213 @@
+using System.Collections.Generic;
+using System;
+namespace DataClass
+{
+
+    public class ConfigSkillManager : ConfigDataManager<ConfigSkillManager,ConfigSkill>
+
+    {
+    
+    public override void Init( )
+    {
+    name = "ConfigSkill";
+    ConfigSkill config = null;
+    
+    config = new ConfigSkill();
+    config.id = 1001;
+    config.name = "绿波红露斩";
+    config.targetType = new int[]{4,0};
+    config.targetQueue = 1;
+    config.level1 = new Dictionary<int,int[]>{{15,new int[]{0,150}}};
+    config.level2 = new Dictionary<int,int[]>{{15,new int[]{0,300}}};
+    config.level3 = new Dictionary<int,int[]>{{15,new int[]{0,600}}};
+    config.selfEffect = "MagicBuffBlue";
+    config.wholeEffect = "MagicCircleBlue";
+    config.targetEffect = "RoundHitBlue";
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigSkill();
+    config.id = 1002;
+    config.name = "玉露还精";
+    config.targetType = new int[]{4,0};
+    config.targetQueue = 0;
+    config.level1 = new Dictionary<int,int[]>{{14,new int[]{0,100}}};
+    config.level2 = new Dictionary<int,int[]>{{14,new int[]{0,200}}};
+    config.level3 = new Dictionary<int,int[]>{{14,new int[]{0,400}}};
+    config.selfEffect = "MagicBuffBlue";
+    config.wholeEffect = "MagicCircleBlue";
+    config.targetEffect = "RoundHitBlue";
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigSkill();
+    config.id = 1003;
+    config.name = "惊雷闪";
+    config.targetType = new int[]{0,3};
+    config.targetQueue = 1;
+    config.level1 = new Dictionary<int,int[]>{{10,new int[]{2,0}},{15,new int[]{0,50}}};
+    config.level2 = new Dictionary<int,int[]>{{10,new int[]{2,0}},{15,new int[]{0,100}}};
+    config.level3 = new Dictionary<int,int[]>{{10,new int[]{2,0}},{15,new int[]{0,150}}};
+    config.selfEffect = "MagicBuffBlue";
+    config.wholeEffect = "MagicCircleBlue";
+    config.targetEffect = "RoundHitBlue";
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigSkill();
+    config.id = 1004;
+    config.name = "妖魔化";
+    config.targetType = new int[]{4,0};
+    config.targetQueue = 1;
+    config.level1 = new Dictionary<int,int[]>{{15,new int[]{0,150}}};
+    config.level2 = new Dictionary<int,int[]>{{15,new int[]{0,300}}};
+    config.level3 = new Dictionary<int,int[]>{{15,new int[]{0,600}}};
+    config.selfEffect = "MagicBuffBlue";
+    config.wholeEffect = "MagicCircleBlue";
+    config.targetEffect = "RoundHitBlue";
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigSkill();
+    config.id = 1005;
+    config.name = "飞龙探云手";
+    config.targetType = new int[]{4,0};
+    config.targetQueue = 1;
+    config.level1 = new Dictionary<int,int[]>{{11,new int[]{2,25}},{15,new int[]{0,100}}};
+    config.level2 = new Dictionary<int,int[]>{{11,new int[]{2,50}},{15,new int[]{0,225}}};
+    config.level3 = new Dictionary<int,int[]>{{11,new int[]{3,50}},{15,new int[]{0,450}}};
+    config.selfEffect = "MagicBuffBlue";
+    config.wholeEffect = "MagicCircleBlue";
+    config.targetEffect = "RoundHitBlue";
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigSkill();
+    config.id = 1006;
+    config.name = "幻鬼三叠杀";
+    config.targetType = new int[]{3,1};
+    config.targetQueue = 1;
+    config.level1 = new Dictionary<int,int[]>{{15,new int[]{0,80}}};
+    config.level2 = new Dictionary<int,int[]>{{15,new int[]{0,160}}};
+    config.level3 = new Dictionary<int,int[]>{{15,new int[]{0,350}}};
+    config.selfEffect = "MagicBuffBlue";
+    config.wholeEffect = "MagicCircleBlue";
+    config.targetEffect = "RoundHitBlue";
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigSkill();
+    config.id = 1007;
+    config.name = "潜身蛊";
+    config.targetType = new int[]{4,0};
+    config.targetQueue = 0;
+    config.level1 = new Dictionary<int,int[]>{{13,new int[]{1,0}}};
+    config.level2 = new Dictionary<int,int[]>{{13,new int[]{2,0}}};
+    config.level3 = new Dictionary<int,int[]>{{13,new int[]{3,0}}};
+    config.selfEffect = "MagicBuffBlue";
+    config.wholeEffect = "MagicCircleBlue";
+    config.targetEffect = "RoundHitBlue";
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigSkill();
+    config.id = 1008;
+    config.name = "五气连波";
+    config.targetType = new int[]{2,0};
+    config.targetQueue = 0;
+    config.level1 = new Dictionary<int,int[]>{{14,new int[]{0,75}}};
+    config.level2 = new Dictionary<int,int[]>{{14,new int[]{0,150}}};
+    config.level3 = new Dictionary<int,int[]>{{14,new int[]{0,300}}};
+    config.selfEffect = "MagicBuffBlue";
+    config.wholeEffect = "MagicCircleBlue";
+    config.targetEffect = "RoundHitBlue";
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigSkill();
+    config.id = 1009;
+    config.name = "剑神";
+    config.targetType = new int[]{4,0};
+    config.targetQueue = 1;
+    config.level1 = new Dictionary<int,int[]>{{15,new int[]{0,150}}};
+    config.level2 = new Dictionary<int,int[]>{{15,new int[]{0,300}}};
+    config.level3 = new Dictionary<int,int[]>{{15,new int[]{0,600}}};
+    config.selfEffect = "MagicBuffBlue";
+    config.wholeEffect = "MagicCircleBlue";
+    config.targetEffect = "RoundHitBlue";
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigSkill();
+    config.id = 1010;
+    config.name = "邪剑斩";
+    config.targetType = new int[]{4,0};
+    config.targetQueue = 1;
+    config.level1 = new Dictionary<int,int[]>{{15,new int[]{0,200}}};
+    config.level2 = new Dictionary<int,int[]>{{15,new int[]{0,400}}};
+    config.level3 = new Dictionary<int,int[]>{{15,new int[]{0,800}}};
+    config.selfEffect = "MagicBuffBlue";
+    config.wholeEffect = "MagicCircleBlue";
+    config.targetEffect = "RoundHitBlue";
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigSkill();
+    config.id = 1011;
+    config.name = "唤妖术";
+    config.targetType = new int[]{3,0};
+    config.targetQueue = 1;
+    config.level1 = new Dictionary<int,int[]>{{16,new int[]{2,0}},{15,new int[]{0,150}}};
+    config.level2 = new Dictionary<int,int[]>{{16,new int[]{3,0}},{15,new int[]{0,300}}};
+    config.level3 = new Dictionary<int,int[]>{{16,new int[]{4,0}},{15,new int[]{0,500}}};
+    config.selfEffect = "MagicBuffBlue";
+    config.wholeEffect = "MagicCircleBlue";
+    config.targetEffect = "RoundHitBlue";
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigSkill();
+    config.id = 1012;
+    config.name = "鬼降";
+    config.targetType = new int[]{4,0};
+    config.targetQueue = 1;
+    config.level1 = new Dictionary<int,int[]>{{12,new int[]{0,0}}};
+    config.level2 = new Dictionary<int,int[]>{{12,new int[]{0,0}}};
+    config.level3 = new Dictionary<int,int[]>{{12,new int[]{0,0}}};
+    config.selfEffect = "MagicBuffBlue";
+    config.wholeEffect = "MagicCircleBlue";
+    config.targetEffect = "RoundHitBlue";
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigSkill();
+    config.id = 1013;
+    config.name = "青穹风神";
+    config.targetType = new int[]{2,1};
+    config.targetQueue = 1;
+    config.level1 = new Dictionary<int,int[]>{{15,new int[]{0,150}}};
+    config.level2 = new Dictionary<int,int[]>{{15,new int[]{0,300}}};
+    config.level3 = new Dictionary<int,int[]>{{15,new int[]{0,600}}};
+    config.selfEffect = "MagicBuffBlue";
+    config.wholeEffect = "MagicCircleBlue";
+    config.targetEffect = "RoundHitBlue";
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigSkill();
+    config.id = 1014;
+    config.name = "万剑诀";
+    config.targetType = new int[]{1,0};
+    config.targetQueue = 1;
+    config.level1 = new Dictionary<int,int[]>{{15,new int[]{0,150}}};
+    config.level2 = new Dictionary<int,int[]>{{15,new int[]{0,300}}};
+    config.level3 = new Dictionary<int,int[]>{{15,new int[]{0,500}}};
+    config.selfEffect = "MagicBuffBlue";
+    config.wholeEffect = "MagicCircleBlue";
+    config.targetEffect = "RoundHitBlue";
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigSkill();
+    config.id = 1015;
+    config.name = "梦蛇";
+    config.targetType = new int[]{0,3};
+    config.targetQueue = 1;
+    config.level1 = new Dictionary<int,int[]>{{10,new int[]{2,0}},{15,new int[]{0,100}}};
+    config.level2 = new Dictionary<int,int[]>{{10,new int[]{2,0}},{15,new int[]{0,200}}};
+    config.level3 = new Dictionary<int,int[]>{{10,new int[]{2,0}},{15,new int[]{0,400}}};
+    config.selfEffect = "MagicBuffBlue";
+    config.wholeEffect = "MagicCircleBlue";
+    config.targetEffect = "RoundHitBlue";
+    allDatas.Add( config.id, config)
+;
+    base.Init();
+    }
+}
+}

@@ -1,0 +1,153 @@
+﻿using System;
+using System.Collections.Generic;
+using DataClass;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class WndRoleShop:ViewBase
+{
+    //-------------------------------------------------------------------
+    class ShopRoleItem
+    {
+        GameObject roleGo;
+
+        //RoleBase role;
+        int roleId;
+
+        int index;
+        Text nameText;
+        Text costText;
+
+        public void Init(GameObject roleGo)
+        {
+            costText = UIUtil.GetText(roleGo, "buy/cost");
+            nameText = UIUtil.GetText(roleGo,"Role/name");
+            this.roleGo = roleGo;
+            //role = new RoleBase();
+            //role.SetGo(UIUtil.GetGameObject(roleGo, "Role"));
+
+            GameObject buyBtn = UIUtil.GetGameObject(roleGo, "buy");
+
+            UIUtil.SetUIOnClick(buyBtn, OnClickBuy);
+
+        }
+
+        void OnClickBuy(object ob = null)
+        {
+            PlayerModel.Instance( ).AddRolePre( roleId);
+
+            RoleShopModel.Instance( ).OnBuyRole( index );
+        }
+
+        public void SetInfo( int roleId, int index)
+        {
+            if(roleId  == 0)
+            {
+                roleGo.SetActive(false);
+                return;
+            }
+            else
+            {
+                roleGo.SetActive(true);
+                this.roleId = roleId;
+                this.index = index;
+               
+                UpdateView();
+            }
+            
+        }
+
+        void UpdateView( )
+        {
+            nameText.text = ConfigRoleManager.Instance().allDatas[roleId].name.ToString();
+            costText.text = ConfigRoleManager.Instance().allDatas[ roleId].cost.ToString();
+        }
+
+    }
+    //-------------------------------------------------------------------------------
+
+    RoleShopModel shopModel;
+    
+    Transform listTrs;
+
+    ShopRoleItem[] roleItemArr;
+    public override void Init()
+    {
+        base.Init();
+    }
+
+    public override void OnFirstOpen()
+    {
+        base.OnFirstOpen();
+
+        roleItemArr = new ShopRoleItem[RoleShopModel.Max_Role_Count];
+
+        AddUIButton("shop/closeBtn", OnClickCloseBtn);
+
+        shopModel = RoleShopModel.Instance();
+
+
+
+        listTrs = GetTransform("shop/list");
+
+        for(int i=0;i<RoleShopModel.Max_Role_Count;i++)
+        {
+            ShopRoleItem roleItem = new ShopRoleItem();
+
+            GameObject go = listTrs.Find(i.ToString()).gameObject;
+            
+            roleItem.Init( go );
+            roleItemArr[i] = roleItem;
+        }
+        
+    }
+
+    public override void OnShow()
+    {
+        base.OnShow();
+
+        AddEvent();
+
+        UpdateView();
+    }
+
+    public override void OnHide()
+    {
+        base.OnHide();
+
+        RemoveEvent();
+    }
+
+    public override void OnDispose()
+    {
+        base.OnDispose();
+    }
+
+    void OnShopDateUpdate(object o = null)
+    {
+        UpdateView();
+    }
+
+    void UpdateView()
+    {
+        for(int i =0;i<roleItemArr.Length;i++)
+        {
+            roleItemArr[i].SetInfo(shopModel.roles[i], i);
+        }
+    }
+
+    void OnClickCloseBtn(object ob = null)
+    {
+        SetVisible(false);
+    }
+
+    void AddEvent()
+    {
+        EventManager.RegistEvent(EventType.ShopDataUpdate, OnShopDateUpdate);
+    }
+    void RemoveEvent()
+    {
+        EventManager.UnRegistEvent(EventType.ShopDataUpdate, OnShopDateUpdate);
+    }
+}
+

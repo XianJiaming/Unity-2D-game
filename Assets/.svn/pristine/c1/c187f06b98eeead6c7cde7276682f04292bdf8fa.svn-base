@@ -1,0 +1,66 @@
+using System.Collections.Generic;
+using System;
+namespace DataClass
+{
+
+    public class ConfigProfessionManager : ConfigDataManager<ConfigProfessionManager,ConfigProfession>
+
+    {
+    
+    public override void Init( )
+    {
+    name = "ConfigProfession";
+    ConfigProfession config = null;
+    
+    config = new ConfigProfession();
+    config.id = 201;
+    config.name = "济世";
+    config.counts = new int[]{2,4,6};
+    config.range = new int[]{1,1,2};
+    config.desc = "暂无";
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigProfession();
+    config.id = 202;
+    config.name = "斗战";
+    config.counts = new int[]{2,4};
+    config.range = new int[]{1,2};
+    config.desc = "暂无";
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigProfession();
+    config.id = 203;
+    config.name = "仙术";
+    config.counts = new int[]{2,4,6};
+    config.range = new int[]{1,1,1};
+    config.desc = "暂无";
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigProfession();
+    config.id = 204;
+    config.name = "大智";
+    config.counts = new int[]{2,4};
+    config.range = new int[]{2,2};
+    config.desc = "暂无";
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigProfession();
+    config.id = 205;
+    config.name = "坚御";
+    config.counts = new int[]{2,4,6};
+    config.range = new int[]{1,1,1};
+    config.desc = "暂无";
+    allDatas.Add( config.id, config)
+;
+    config = new ConfigProfession();
+    config.id = 206;
+    config.name = "灵动";
+    config.counts = new int[]{2,4};
+    config.range = new int[]{1,2};
+    config.desc = "暂无";
+    allDatas.Add( config.id, config)
+;
+    base.Init();
+    }
+}
+}

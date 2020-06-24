@@ -1,0 +1,84 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using System;
+using Object = UnityEngine.Object;
+
+public class ResourceManager
+{
+    const string rolePath = "Prefab/RoleModel/";
+
+
+
+    public static ResourceManager instance = new ResourceManager();
+    private ResourceManager()
+    {
+        Init();
+    }
+
+  
+    //加载过的资源都存在这个字典里
+    public static Dictionary<string,Object> assetMap = new Dictionary<string, UnityEngine.Object>();
+
+
+    public static Object LoadAsset(string path)
+    {
+        Object asset = Resources.Load(path);
+        if (asset == null) Debug.LogError($"加载的资源为空——{path}");
+        else
+        {
+            assetMap.Add(asset.name, asset);
+        }
+        
+
+        return asset;
+    }
+
+    public static T LoadAsset<T>(string path) where T: UnityEngine.Object
+    {
+        T asset = Resources.Load<T>(path);
+        if (asset == null) Debug.LogError($"加载的资源为空——{path}");
+        else
+        {
+            assetMap.Add(asset.name, asset);
+        }
+        return asset;
+    }
+
+    public static T GetAsset<T>(string name) where T:Object
+    {
+        T asset = assetMap[name] as T;
+
+        if(asset == null)
+        {
+            Debug.LogError("获取的资源为空" + name);
+        }
+
+        return asset;
+    }
+
+
+    public static GameObject GetRole(string name)
+    {
+        GameObject asset = null;
+        if( !assetMap.ContainsKey(name))
+        {
+            asset = LoadAsset<GameObject>(rolePath + name);
+        }
+        else
+        {
+            asset = assetMap[name] as GameObject;
+        }
+        return asset;
+    }
+
+    void Init()
+    {
+
+        
+    }
+
+    
+
+}

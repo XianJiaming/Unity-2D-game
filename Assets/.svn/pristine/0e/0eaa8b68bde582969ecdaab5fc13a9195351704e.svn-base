@@ -1,0 +1,128 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using DG.Tweening;
+
+public class WndFight:ViewBase
+{
+    RectTransform[] playerPositions;
+    RectTransform[] aiPositions;
+
+    GameObject[] playerRoleGos;
+    GameObject[] aiRoleGos;
+
+    PlayerModel playerModel;
+    AIModel aiModel;
+
+    FightManager fightManager;
+    public override void Init()
+    {
+        base.Init();
+        layer = GameLayer.Fight;
+
+        playerModel =  ModelManager.Get("PlayerModel") as PlayerModel;
+        aiModel = ModelManager.Get("AIModel") as AIModel;
+    }
+
+    public override void OnFirstOpen()
+    {
+        base.OnFirstOpen();
+
+        GameObject fightRoleGo = GetGameObject("fightRoleGo");
+        
+
+        fightManager = FightManager.instance;
+        
+        int count = FightManager.Max_Fight_List_Number;
+
+
+
+        Transform playerPos = GetTransform("playerPosition");
+        playerPositions = new RectTransform[count];
+        for (int i = 0; i < count; i++)
+        {
+            playerPositions[i] = playerPos.Find(i.ToString()).GetComponent<RectTransform>();
+        }
+
+        Transform aiPos = GetTransform("aiPosition");
+        aiPositions = new RectTransform[count];
+        for (int i = 0; i < count; i++)
+        {
+            aiPositions[i] = aiPos.Find(i.ToString()).GetComponent<RectTransform>();
+        }
+
+
+
+        playerRoleGos = new GameObject[count];
+        for (int i = 0; i < count; i++)
+        {
+            var go = GameObject.Instantiate(fightRoleGo, playerPositions[i]);
+            go.transform.localPosition = Vector2.zero;
+            playerRoleGos[i] = go;
+        }
+
+        aiRoleGos = new GameObject[count];
+        for (int i = 0; i < count; i++)
+        {
+            var go = GameObject.Instantiate(fightRoleGo, aiPositions[i]);
+            go.transform.localPosition = Vector2.zero;
+            aiRoleGos[i] = go;
+        }
+        GameObject.Destroy(fightRoleGo);
+    }
+
+    public override void OnShow()
+    {
+        base.OnShow();
+
+        AddEvent();
+
+        
+        fightManager.BeginFight(playerModel.fightRoles, aiModel.fightRoles , playerRoleGos, aiRoleGos);
+              
+    }
+
+    public override void OnHide() {
+        RemoveEvent();
+    }
+
+    public override void OnDispose() { }
+
+    void OnFightOver(object ob = null )
+    {
+        SetVisible(false);
+    }
+
+    void AddEvent( )
+    {
+        EventManager.RegistEvent(EventType.FightEnd, OnFightOver);
+        EventManager.RegistEvent(EventType.RoleBeAttack, OnRoleBeAttack);
+    }
+    void RemoveEvent( )
+    {
+        EventManager.UnRegistEvent(EventType.FightEnd, OnFightOver);
+        EventManager.UnRegistEvent(EventType.RoleBeAttack, OnRoleBeAttack);
+    }
+
+    void OnRoleBeAttack(dynamic ob )
+    {
+        var role = ob as RoleBase;
+
+        var effectGo = ObjectPool.GetGo("CartoonyFightAction");
+
+        //effectGo.transform.position = fightRole.transform.position;
+
+        //将一个UI坐标专成一个3d物体的坐标
+        //后面设置为10是 因为相机的z为 -10， 要让z之和为0，具体原因未知
+
+        //相机为 perspective Canvas render model 为 camera
+
+        var sP = RectTransformUtility.WorldToScreenPoint(Camera.main, role.fightRole.transform.position);
+
+        var worldPoint = Camera.main.ScreenToWorldPoint(new Vector3(sP.x, sP.y, 10));
+
+        effectGo.transform.position = worldPoint;
+    }
+
+}

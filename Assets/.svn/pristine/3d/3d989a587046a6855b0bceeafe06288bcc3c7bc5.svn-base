@@ -1,0 +1,56 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class WndGameStart:ViewBase
+{
+    
+    public override void Init() {
+        base.Init();
+        SetVisible(true);
+    }
+
+    public override void OnFirstOpen()
+    {
+        AddUIButton("btnList/startGame", OnClickStartGame);
+        AddUIButton("btnList/exitGame", OnClickExitGame);
+        AddUIButton("btnList/loadGame", OnClickLoaddGame);
+    }
+
+    public override void OnShow() { }
+
+    public override void OnHide() { }
+
+    public override void OnDispose() { }
+
+    public void OnClickStartGame(GameObject go)
+    {
+        SaveAndLoad.Clear();
+        LoadGame();
+    }
+    void OnClickLoaddGame(GameObject go)
+    {
+        LoadGame();
+    }
+
+    void LoadGame()
+    {
+        Debug.Log("开始游戏");
+        SetVisible(false);
+
+        Main.isGame = true;
+
+        EventManager.ExecuteEvent(EventType.GameStart);
+
+        (ModelManager.Get("GameLevelModel") as GameLevelModel).SetAIRole();
+
+        ViewManager.Get("WndPrepare").SetVisible(true);
+        ViewManager.Get("WndCooper").SetVisible(true);
+    }
+
+    void OnClickExitGame(GameObject go)
+    {
+        Application.Quit();
+    }
+
+}

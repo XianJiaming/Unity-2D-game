@@ -1,0 +1,70 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using DataClass;
+using UnityEngine;
+
+public class SkillBase
+{
+    int level; //技能等级 与角色等级同步
+    int id;
+    string name;
+    int[] targetParam;
+    int targetQueue;
+    Dictionary<int, int> idValue = new Dictionary<int, int>();
+
+    public void SetId( int id, int level )
+    {
+
+        var datas = ConfigSkillManager.Instance().allDatas[id];
+        this.id = id;
+        name = datas.name;
+        targetParam = datas.targetType;
+        this.level = level;
+
+        foreach(var v in datas.idValue)
+        {
+            idValue.Add(v.Key, v.Value[level - 1]);
+        }
+
+    }
+    public void Use(RoleBase[] team, RoleBase[] enemy)
+    {
+       
+        RoleBase[] target = SkillHelp.GetSkillTarget(team, enemy, targetParam, targetQueue);
+     
+
+        //使用技能暂定伤害为100点
+        for (int i = 0; i < target.Length; i++)
+        {
+            if(target[i] != null)
+            {
+                Debug.Log($"对角色{target[i].name}使用了技能-{name}");
+                target[i].BeAttack(200);
+            }     
+        }
+        EndUse();
+    }
+
+    void EndUse()
+    {
+        FightManager.instance.isAnyoneAct = false;
+    }
+
+    //技能等级变化时要 去更新 value， 创建角色时同时创建更新技能等级
+    //该方法暂时无用，因为角色不会升级，只会被创建新角色
+    //     void SetLevel(int value)
+    //     {
+    //         level = value;
+    //         var datas = ConfigSkillManager.Instance().allDatas[id];
+    //         foreach(var v in idValue)
+    //         {
+    //            idValue[v.Key] = datas.idValue[v.Key][level - 1];
+    //         }
+    //    }
+    //使用技能
+
+
+} 
+   
+

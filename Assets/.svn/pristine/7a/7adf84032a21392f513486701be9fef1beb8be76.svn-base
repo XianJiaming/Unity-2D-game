@@ -1,0 +1,60 @@
+﻿
+using System.Collections;
+using System.Collections.Generic;
+
+public class AIModel:ModelBase
+{
+   
+    public RoleBase[] fightRoles;
+
+    
+
+    protected override void  Init()
+    {
+        EventManager.RegistEvent(EventType.GameStart, OnGameStar);
+    }
+
+    void OnGameStar(object ob = null)
+    {
+        fightRoles = new RoleBase[9];
+    }
+
+    public void SetAIRole(int index, int id, int level)
+    {
+        RoleBase role = new RoleBase();
+        role.SetId(id, level);
+        fightRoles[index] = role;
+    }
+
+    public void ClearRole()
+    {
+        for(int i =0;i<fightRoles.Length;i++)
+        {
+            fightRoles[i] = null;
+        }
+    }
+    //ai角色增加羁绊效果
+    List<Cooperation> coopers = new List<Cooperation>();
+    public void UpdateAiCooperData()
+    {
+        coopers.Clear();
+             
+        for (int i = 0; i < fightRoles.Length; i++)
+        {
+            RoleBase role = fightRoles[i];
+            if (role != null)
+            {
+                coopers.Add(new Cooperation(role.GetCooperId()));                                
+            }
+
+        }
+        foreach (var v in coopers)
+        {
+            v.Update(fightRoles);
+        }
+        //通知羁绊更新完成 （显示更新)
+        
+    }
+}
+
+
